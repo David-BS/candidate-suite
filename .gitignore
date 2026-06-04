@@ -1,0 +1,30 @@
+# ── Built skill artifacts ────────────────────────────────────────────────
+# Distributed via GitHub Releases (built by tooling/build_skill.py), never committed.
+/dist/
+*.skill
+
+# ── Personal / real candidate data — NEVER commit ────────────────────────
+# The skill source ships only fictional placeholder data; real data lives in
+# the user's Claude project files, not in this repo.
+CV_*.docx
+*_b64.txt
+signature*.txt
+Applications_Tracker_*.csv
+Suivi_Candidatures_*.csv
+# (the bundled neutral letter template Cover_letter_template.docx is NOT matched
+#  by the CV_*.docx rule above and IS committed as part of the skill source.)
+
+# ── Claude runtime / scratch ─────────────────────────────────────────────
+outputs/
+/mnt/
+
+# ── Python ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+
+# ── OS / editors ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
