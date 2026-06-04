@@ -14,6 +14,13 @@ Suivi_Candidatures_*.csv
 # (the bundled neutral letter template Cover_letter_template.docx is NOT matched
 #  by the CV_*.docx rule above and IS committed as part of the skill source.)
 
+# ── Internal working docs — not for the public repo ──────────────────────
+# The roadmap is an internal progression log that references real data
+# (companies applied to, maintainer name). It lives in the Claude project,
+# never in this public repository. This pattern is a safety net in case a
+# copy ever lands in the working tree.
+ROADMAP_*.md
+
 # ── Claude runtime / scratch ─────────────────────────────────────────────
 outputs/
 /mnt/
