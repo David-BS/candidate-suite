@@ -47,11 +47,13 @@ def iso639_1(value):
     fills a single neutral template. `--language` is form-validated metadata only; any
     ISO code works.
     """
-    if not re.fullmatch(r'[a-z]{2}', value or ''):
+    if not re.fullmatch(r"[a-z]{2}", value or ""):
         raise argparse.ArgumentTypeError(
             f"--language must be a 2-letter ISO 639-1 code (lowercase), e.g. en, fr; got: {value!r}"
         )
     return value
+
+
 import base64
 import io
 import json
@@ -64,7 +66,7 @@ from docx.shared import Cm
 
 def decode_base64_signature(base64_string):
     """Decodes a base64 signature and returns a BytesIO."""
-    base64_clean = base64_string.replace('\n', '').replace(' ', '').replace('\r', '')
+    base64_clean = base64_string.replace("\n", "").replace(" ", "").replace("\r", "")
     image_bytes = base64.b64decode(base64_clean)
     return io.BytesIO(image_bytes)
 
@@ -95,9 +97,9 @@ def _make_floating(run, cx, cy):
     from docx.oxml.ns import qn, nsdecls
 
     PT = 12700  # EMU per point
-    drawing = run._element.find(qn('w:drawing'))
-    inline = drawing.find(qn('wp:inline'))
-    graphic = inline.find(qn('a:graphic'))
+    drawing = run._element.find(qn("w:drawing"))
+    inline = drawing.find(qn("wp:inline"))
+    graphic = inline.find(qn("a:graphic"))
 
     h_off = int(round(143.75 * PT))
     v_off = int(round(-0.3 * PT))
@@ -114,12 +116,12 @@ def _make_floating(run, cx, cy):
         '<wp:effectExtent l="0" t="0" r="0" b="0"/>'
         '<wp:wrapSquare wrapText="bothSides"/>'
         '<wp:docPr id="100" name="Signature"/>'
-        '<wp:cNvGraphicFramePr/>'
-        '</wp:anchor>'
-        % (nsdecls('wp', 'a', 'r', 'pic'), dist, dist, h_off, v_off, int(cx), int(cy))
+        "<wp:cNvGraphicFramePr/>"
+        "</wp:anchor>"
+        % (nsdecls("wp", "a", "r", "pic"), dist, dist, h_off, v_off, int(cx), int(cy))
     )
-    anchor.append(graphic)            # move the graphic into the anchor
-    drawing.replace(inline, anchor)   # inline -> floating
+    anchor.append(graphic)  # move the graphic into the anchor
+    drawing.replace(inline, anchor)  # inline -> floating
 
 
 def insert_signature(doc, signature_base64):
@@ -135,7 +137,7 @@ def insert_signature(doc, signature_base64):
     paras = doc.paragraphs
 
     for idx, paragraph in enumerate(paras):
-        if '{{SIGNATURE_IMAGE}}' in paragraph.text:
+        if "{{SIGNATURE_IMAGE}}" in paragraph.text:
             # Anchor paragraph = name (previous non-empty), otherwise the placeholder
             anchor_para = None
             for j in range(idx - 1, -1, -1):
@@ -151,13 +153,16 @@ def insert_signature(doc, signature_base64):
                 _make_floating(run, cx, cy)
             except Exception as e:
                 # Fallback: if the floating conversion fails, the image stays inline
-                print(f"⚠️ Signature flottante impossible, repli inline : {e}", file=sys.stderr)
+                print(
+                    f"⚠️ Signature flottante impossible, repli inline : {e}",
+                    file=sys.stderr,
+                )
 
             if host is paragraph:
                 # placeholder = host: remove the placeholder text, keep the image
                 for r in list(paragraph.runs):
-                    if '{{SIGNATURE_IMAGE}}' in r.text:
-                        r.text = r.text.replace('{{SIGNATURE_IMAGE}}', '')
+                    if "{{SIGNATURE_IMAGE}}" in r.text:
+                        r.text = r.text.replace("{{SIGNATURE_IMAGE}}", "")
             else:
                 # remove the now-useless placeholder paragraph
                 el = paragraph._element
@@ -170,10 +175,10 @@ def insert_signature(doc, signature_base64):
 def remove_signature_placeholder(doc):
     """Cleanly removes the {{SIGNATURE_IMAGE}} placeholder (letter without a signature image)."""
     for paragraph in doc.paragraphs:
-        if '{{SIGNATURE_IMAGE}}' in paragraph.text:
+        if "{{SIGNATURE_IMAGE}}" in paragraph.text:
             for run in paragraph.runs:
-                if '{{SIGNATURE_IMAGE}}' in run.text:
-                    run.text = run.text.replace('{{SIGNATURE_IMAGE}}', '')
+                if "{{SIGNATURE_IMAGE}}" in run.text:
+                    run.text = run.text.replace("{{SIGNATURE_IMAGE}}", "")
             return True
     return False
 
@@ -184,40 +189,42 @@ def build_replacements(data):
     """
     # Mapping placeholder -> key in data
     mapping = {
-        '{{SENDER_NAME}}': 'sender_name',
-        '{{SENDER_STREET}}': 'sender_street',
-        '{{SENDER_POSTAL_CODE}}': 'sender_postal_code',
-        '{{SENDER_CITY}}': 'sender_city',
-        '{{SENDER_EMAIL}}': 'sender_email',
-        '{{SENDER_LINKEDIN}}': 'sender_linkedin',
-        '{{SENDER_PHONE}}': 'sender_phone',
-        '{{SENDER_FULL_NAME}}': 'sender_full_name',
-        '{{RECRUITER_NAME}}': 'recruiter_name',
-        '{{RECRUITER_TITLE}}': 'recruiter_title',
-        '{{COMPANY_NAME}}': 'company_name',
-        '{{DATE_LETTER}}': 'date_letter',
-        '{{JOB_TITLE}}': 'job_title',
-        '{{GREETING}}': 'greeting',
-        '{{SUBJECT_LABEL}}': 'subject_label',
-        '{{CLOSING}}': 'closing',
-        '{{PARAGRAPH_1_INTRO}}': 'paragraph_1_intro',
-        '{{PARAGRAPH_2_CURRENT}}': 'paragraph_2_current',
-        '{{PARAGRAPH_3_EXPERIENCE}}': 'paragraph_3_experience',
-        '{{PARAGRAPH_4_ACHIEVEMENTS}}': 'paragraph_4_value',  # legacy name in the template
-        '{{PARAGRAPH_5_CLOSING}}': 'paragraph_5_closing',
+        "{{SENDER_NAME}}": "sender_name",
+        "{{SENDER_STREET}}": "sender_street",
+        "{{SENDER_POSTAL_CODE}}": "sender_postal_code",
+        "{{SENDER_CITY}}": "sender_city",
+        "{{SENDER_EMAIL}}": "sender_email",
+        "{{SENDER_LINKEDIN}}": "sender_linkedin",
+        "{{SENDER_PHONE}}": "sender_phone",
+        "{{SENDER_FULL_NAME}}": "sender_full_name",
+        "{{RECRUITER_NAME}}": "recruiter_name",
+        "{{RECRUITER_TITLE}}": "recruiter_title",
+        "{{COMPANY_NAME}}": "company_name",
+        "{{DATE_LETTER}}": "date_letter",
+        "{{JOB_TITLE}}": "job_title",
+        "{{GREETING}}": "greeting",
+        "{{SUBJECT_LABEL}}": "subject_label",
+        "{{CLOSING}}": "closing",
+        "{{PARAGRAPH_1_INTRO}}": "paragraph_1_intro",
+        "{{PARAGRAPH_2_CURRENT}}": "paragraph_2_current",
+        "{{PARAGRAPH_3_EXPERIENCE}}": "paragraph_3_experience",
+        "{{PARAGRAPH_4_ACHIEVEMENTS}}": "paragraph_4_value",  # legacy name in the template
+        "{{PARAGRAPH_5_CLOSING}}": "paragraph_5_closing",
     }
-    
+
     replacements = {}
     for placeholder, data_key in mapping.items():
-        value = data.get(data_key, '')
+        value = data.get(data_key, "")
         if value is None:
-            value = ''
+            value = ""
         replacements[placeholder] = str(value)
-    
+
     return replacements
 
 
-def fill_template(language, template_path, signature_path, signature_base64_arg, output_path, data):
+def fill_template(
+    language, template_path, signature_path, signature_base64_arg, output_path, data
+):
     """Fills the template with the data and inserts the signature (if provided).
 
     The signature can come from two (mutually exclusive) sources:
@@ -238,7 +245,7 @@ def fill_template(language, template_path, signature_path, signature_base64_arg,
         signature_base64 = signature_base64_arg.strip()
     elif signature_path and Path(signature_path).exists():
         try:
-            with open(signature_path, 'r') as f:
+            with open(signature_path, "r") as f:
                 content = f.read().strip()
             if content:
                 signature_base64 = content
@@ -251,36 +258,37 @@ def fill_template(language, template_path, signature_path, signature_base64_arg,
 
     # Load the template
     doc = Document(template_path)
-    
+
     # Build the replacements
     replacements = build_replacements(data)
-    
+
     # 1. Replace all placeholders EXCEPT the signature (preserving the runs)
     for paragraph in doc.paragraphs:
-        if '{{SIGNATURE_IMAGE}}' not in paragraph.text:
+        if "{{SIGNATURE_IMAGE}}" not in paragraph.text:
             replace_text_in_paragraph(paragraph, replacements)
-    
+
     # Also replace in tables if present
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
-                    if '{{SIGNATURE_IMAGE}}' not in paragraph.text:
+                    if "{{SIGNATURE_IMAGE}}" not in paragraph.text:
                         replace_text_in_paragraph(paragraph, replacements)
-    
+
     # #3bis — unknown recruiter (empty title): clean the orphan comma in the
     # recipient block (« Service Recrutement, » → « Service Recrutement »), without
     # touching line breaks (separate <w:br>) or the date line.
-    if not str(data.get('recruiter_title') or '').strip():
+    if not str(data.get("recruiter_title") or "").strip():
         from docx.oxml.ns import qn as _qn
-        rec_name = str(data.get('recruiter_name') or '')
-        comp = str(data.get('company_name') or '')
+
+        rec_name = str(data.get("recruiter_name") or "")
+        comp = str(data.get("company_name") or "")
         for p in doc.paragraphs:
             if rec_name and comp and rec_name in p.text and comp in p.text:
                 for r in p.runs:
-                    if r._element.find(_qn('w:br')) is not None:
-                        t = r._element.find(_qn('w:t'))
-                        if t is not None and t.text and t.text.rstrip().endswith(','):
+                    if r._element.find(_qn("w:br")) is not None:
+                        t = r._element.find(_qn("w:t"))
+                        if t is not None and t.text and t.text.rstrip().endswith(","):
                             t.text = t.text.rstrip()[:-1].rstrip()
                 break
 
@@ -289,19 +297,25 @@ def fill_template(language, template_path, signature_path, signature_base64_arg,
         try:
             inserted = insert_signature(doc, signature_base64)
             if not inserted:
-                print("⚠️ Placeholder {{SIGNATURE_IMAGE}} non trouvé dans le template", file=sys.stderr)
+                print(
+                    "⚠️ Placeholder {{SIGNATURE_IMAGE}} non trouvé dans le template",
+                    file=sys.stderr,
+                )
         except Exception as e:
             print(f"⚠️ Signature invalide, placeholder retiré : {e}", file=sys.stderr)
             remove_signature_placeholder(doc)
     else:
         # No signature: cleanly remove the placeholder so it isn't displayed
         remove_signature_placeholder(doc)
-        print("ℹ️ Aucune signature fournie : lettre générée sans image de signature.", file=sys.stderr)
-    
+        print(
+            "ℹ️ Aucune signature fournie : lettre générée sans image de signature.",
+            file=sys.stderr,
+        )
+
     # 3. Save
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
-    
+
     print(f"✅ Cover letter générée : {output_path}")
     return output_path
 
@@ -316,11 +330,11 @@ BODY_CAP_DEFAULT = 2800
 # Body paragraphs (order) and SOFT distribution ratios (15/22/26/22/15).
 # Individually non-blocking: they indicate WHICH paragraph to shorten.
 BODY_PARAGRAPHS = [
-    ('paragraph_1_intro', 0.15),
-    ('paragraph_2_current', 0.22),
-    ('paragraph_3_experience', 0.26),
-    ('paragraph_4_value', 0.22),
-    ('paragraph_5_closing', 0.15),
+    ("paragraph_1_intro", 0.15),
+    ("paragraph_2_current", 0.22),
+    ("paragraph_3_experience", 0.26),
+    ("paragraph_4_value", 0.22),
+    ("paragraph_5_closing", 0.15),
 ]
 
 
@@ -330,7 +344,7 @@ def check_body_cap(data, cap):
     details = []
     total = 0
     for field, ratio in BODY_PARAGRAPHS:
-        length = len(str(data.get(field, '') or ''))
+        length = len(str(data.get(field, "") or ""))
         total += length
         target = int(round(cap * ratio))
         details.append((field, length, target, length > target * 1.2))
@@ -338,36 +352,68 @@ def check_body_cap(data, cap):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Fills a cover-letter template')
-    parser.add_argument('--language', required=True, type=iso639_1,
-                        metavar='LANG', help='ISO 639-1 language code (lowercase), e.g. en, fr')
-    parser.add_argument('--template-path', required=True, help='Path to the .docx template')
-    parser.add_argument('--signature-path', default='', help='Path to the base64 signature file (optional)')
-    parser.add_argument('--signature-base64', default='', help='Base64 signature (direct string, optional; takes priority over --signature-path)')
-    parser.add_argument('--output-path', required=True, help='Output .docx path')
-    parser.add_argument('--data-json', required=True, help='JSON with all the data')
-    parser.add_argument('--body-cap', type=int, default=BODY_CAP_DEFAULT,
-                        help=f'Plafond du corps en caractères (défaut {BODY_CAP_DEFAULT})')
-    
+    parser = argparse.ArgumentParser(description="Fills a cover-letter template")
+    parser.add_argument(
+        "--language",
+        required=True,
+        type=iso639_1,
+        metavar="LANG",
+        help="ISO 639-1 language code (lowercase), e.g. en, fr",
+    )
+    parser.add_argument(
+        "--template-path", required=True, help="Path to the .docx template"
+    )
+    parser.add_argument(
+        "--signature-path",
+        default="",
+        help="Path to the base64 signature file (optional)",
+    )
+    parser.add_argument(
+        "--signature-base64",
+        default="",
+        help="Base64 signature (direct string, optional; takes priority over --signature-path)",
+    )
+    parser.add_argument("--output-path", required=True, help="Output .docx path")
+    parser.add_argument("--data-json", required=True, help="JSON with all the data")
+    parser.add_argument(
+        "--body-cap",
+        type=int,
+        default=BODY_CAP_DEFAULT,
+        help=f"Plafond du corps en caractères (défaut {BODY_CAP_DEFAULT})",
+    )
+
     args = parser.parse_args()
-    
+
     # Parse the JSON
     try:
         data = json.loads(args.data_json)
     except json.JSONDecodeError as e:
         print(f"❌ JSON invalide : {e}", file=sys.stderr)
         sys.exit(1)
-    
+
     # Check the required fields
     required_fields = [
-        'sender_name', 'sender_street', 'sender_postal_code', 'sender_city',
-        'sender_email', 'sender_phone', 'sender_linkedin', 'sender_full_name',
-        'recruiter_name', 'recruiter_title', 'company_name', 'date_letter',
-        'job_title', 'greeting',
-        'paragraph_1_intro', 'paragraph_2_current', 'paragraph_3_experience',
-        'paragraph_4_value', 'paragraph_5_closing',
+        "sender_name",
+        "sender_street",
+        "sender_postal_code",
+        "sender_city",
+        "sender_email",
+        "sender_phone",
+        "sender_linkedin",
+        "sender_full_name",
+        "recruiter_name",
+        "recruiter_title",
+        "company_name",
+        "date_letter",
+        "job_title",
+        "greeting",
+        "paragraph_1_intro",
+        "paragraph_2_current",
+        "paragraph_3_experience",
+        "paragraph_4_value",
+        "paragraph_5_closing",
     ]
-    
+
     # Detect missing fields (absent / None) and blank values. A value is "blank"
     # if it is empty/whitespace OR equals the MISSING sentinel — a language-neutral
     # token the orchestrator passes when a required datum is unknown. This is a
@@ -382,14 +428,25 @@ def main():
         return (not s) or (s == MISSING_SENTINEL)
 
     missing = [f for f in required_fields if f not in data or data[f] is None]
-    blank = [f for f in required_fields if f in data and data[f] is not None and _is_blank(data[f])]
+    blank = [
+        f
+        for f in required_fields
+        if f in data and data[f] is not None and _is_blank(data[f])
+    ]
 
     # Critical fields for which a blank value (empty or sentinel) is unacceptable.
     critical_fields = [
-        'sender_full_name', 'sender_street', 'sender_postal_code', 'sender_city',
-        'sender_email', 'company_name',
-        'paragraph_1_intro', 'paragraph_2_current', 'paragraph_3_experience',
-        'paragraph_4_value', 'paragraph_5_closing',
+        "sender_full_name",
+        "sender_street",
+        "sender_postal_code",
+        "sender_city",
+        "sender_email",
+        "company_name",
+        "paragraph_1_intro",
+        "paragraph_2_current",
+        "paragraph_3_experience",
+        "paragraph_4_value",
+        "paragraph_5_closing",
     ]
     critical_blank = [f for f in critical_fields if f in blank]
 
@@ -397,17 +454,26 @@ def main():
         print(f"\u274c Missing fields in the JSON: {missing}", file=sys.stderr)
         sys.exit(1)
     if critical_blank:
-        print("\u274c Mandatory data missing (empty or the '__MISSING__' sentinel) \u2014 refusing to generate an incomplete letter:", file=sys.stderr)
+        print(
+            "\u274c Mandatory data missing (empty or the '__MISSING__' sentinel) \u2014 refusing to generate an incomplete letter:",
+            file=sys.stderr,
+        )
         for f in critical_blank:
             print(f"   - {f}", file=sys.stderr)
-        print("   \u2192 Do NOT fill these with a placeholder. Ask the user for them, then re-run", file=sys.stderr)
-        print("     (see the GUIDE's \"Mandatory data\" section).", file=sys.stderr)
+        print(
+            "   \u2192 Do NOT fill these with a placeholder. Ask the user for them, then re-run",
+            file=sys.stderr,
+        )
+        print('     (see the GUIDE\'s "Mandatory data" section).', file=sys.stderr)
         sys.exit(2)
     non_critical_blank = [f for f in blank if f not in critical_fields]
     if non_critical_blank:
         # Blank but non-critical fields (e.g. linkedin): warn without blocking.
-        print(f"\u26a0\ufe0f Blank fields (non-blocking): {non_critical_blank}", file=sys.stderr)
-    
+        print(
+            f"\u26a0\ufe0f Blank fields (non-blocking): {non_critical_blank}",
+            file=sys.stderr,
+        )
+
     # 0.4.0 — "one page" guardrail (LIV-1): reject if the body exceeds the cap.
     ok, total, details = check_body_cap(data, args.body_cap)
     if not ok:
@@ -418,9 +484,15 @@ def main():
             if target and length > target and length / target > worst:
                 worst = length / target
                 prio = field
-        print(f"❌ Lettre trop longue : corps = {total} caractères (plafond {args.body_cap}). "
-              f"Elle déborderait sur une 2e page.", file=sys.stderr)
-        print("   Raccourcis le CONTENU (jamais les marges ni la police) puis régénère.", file=sys.stderr)
+        print(
+            f"❌ Lettre trop longue : corps = {total} caractères (plafond {args.body_cap}). "
+            f"Elle déborderait sur une 2e page.",
+            file=sys.stderr,
+        )
+        print(
+            "   Raccourcis le CONTENU (jamais les marges ni la police) puis régénère.",
+            file=sys.stderr,
+        )
         print("   Tailles par paragraphe — cible = ratio × plafond :", file=sys.stderr)
         for field, length, target, _ in details:
             mark = "  ⟵ à raccourcir en priorité" if field == prio else ""
@@ -428,7 +500,10 @@ def main():
         sys.exit(2)
     over = [d for d in details if d[3]]
     if over:
-        print("⚠️ Équilibrage (non bloquant) — paragraphe(s) très au-dessus de leur cible :", file=sys.stderr)
+        print(
+            "⚠️ Équilibrage (non bloquant) — paragraphe(s) très au-dessus de leur cible :",
+            file=sys.stderr,
+        )
         for field, length, target, _ in over:
             print(f"     - {field}: {length} (cible ~{target})", file=sys.stderr)
 
@@ -438,9 +513,9 @@ def main():
         signature_path=args.signature_path,
         signature_base64_arg=args.signature_base64,
         output_path=args.output_path,
-        data=data
+        data=data,
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

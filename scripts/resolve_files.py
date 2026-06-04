@@ -76,7 +76,9 @@ def resolve_one(name, uploads_dir, project_dir):
     # 2. Project file (one-time setup)
     project_path = Path(project_dir) / name
     if project_path.is_file():
-        result.update(status="present_project", path=str(project_path), source="project")
+        result.update(
+            status="present_project", path=str(project_path), source="project"
+        )
         return result
 
     # 3. Referenced but not found locally → the orchestrator ASKS for the file.
@@ -89,18 +91,28 @@ def main():
     parser = argparse.ArgumentParser(
         description="Resolves the location of the CV and signature (upload → project; no Drive)."
     )
-    parser.add_argument("--cv-name", default="", help="CV filename (from [CONFIG] CV filename).")
-    parser.add_argument("--signature-name", default="",
-                        help="Base64 signature .txt filename (from [CONFIG] Signature filename).")
+    parser.add_argument(
+        "--cv-name", default="", help="CV filename (from [CONFIG] CV filename)."
+    )
+    parser.add_argument(
+        "--signature-name",
+        default="",
+        help="Base64 signature .txt filename (from [CONFIG] Signature filename).",
+    )
     parser.add_argument("--uploads-dir", default=DEFAULT_UPLOADS_DIR)
     parser.add_argument("--project-dir", default=DEFAULT_PROJECT_DIR)
-    parser.add_argument("--output-path", default="",
-                        help="If provided, also writes the JSON to this file.")
+    parser.add_argument(
+        "--output-path",
+        default="",
+        help="If provided, also writes the JSON to this file.",
+    )
     args = parser.parse_args()
 
     payload = {
         "cv": resolve_one(args.cv_name, args.uploads_dir, args.project_dir),
-        "signature": resolve_one(args.signature_name, args.uploads_dir, args.project_dir),
+        "signature": resolve_one(
+            args.signature_name, args.uploads_dir, args.project_dir
+        ),
     }
 
     out = json.dumps(payload, ensure_ascii=False, indent=2)
@@ -117,8 +129,10 @@ def main():
             where = "projet" if f["status"] == "present_project" else "upload"
             print(f"  {label} : présent ({where}) → {f['path']}", file=sys.stderr)
         elif f["status"] == "referenced_missing":
-            print(f"  {label} : référencé mais absent ({f['name']}) — à demander à l'utilisateur",
-                  file=sys.stderr)
+            print(
+                f"  {label} : référencé mais absent ({f['name']}) — à demander à l'utilisateur",
+                file=sys.stderr,
+            )
         else:
             print(f"  {label} : aucun nom configuré", file=sys.stderr)
 

@@ -45,11 +45,25 @@ from pathlib import Path
 
 
 FIELDNAMES = [
-    "date", "company", "position", "language",
-    "status", "deliverables", "conversation", "title", "notes",
+    "date",
+    "company",
+    "position",
+    "language",
+    "status",
+    "deliverables",
+    "conversation",
+    "title",
+    "notes",
 ]
 
-DEFAULT_STATUSES = ["Applied", "Interview scheduled", "In progress", "Offer", "Rejected", "Withdrawn"]
+DEFAULT_STATUSES = [
+    "Applied",
+    "Interview scheduled",
+    "In progress",
+    "Offer",
+    "Rejected",
+    "Withdrawn",
+]
 
 # Canonical status -> LABELS_EN key. Display localization only: the stored/engine
 # value stays the canonical English string; statusLabel() maps it to the visible
@@ -133,7 +147,9 @@ def build_html(entries, statuses, readonly, surface, ui_lang, labels):
     readonly_js = "true" if readonly else "false"
     labels_json = json.dumps(labels, ensure_ascii=False)
     # Status DISPLAY map: canonical -> localized label (values stay canonical).
-    status_labels = {canon: labels.get(key, canon) for canon, key in STATUS_LABEL_KEYS.items()}
+    status_labels = {
+        canon: labels.get(key, canon) for canon, key in STATUS_LABEL_KEYS.items()
+    }
     status_labels_json = json.dumps(status_labels, ensure_ascii=False)
 
     # NB: no f-string for the big block (too many JS braces). We use
@@ -671,18 +687,30 @@ def build_html(entries, statuses, readonly, surface, ui_lang, labels):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generates the tracking dashboard HTML")
+    parser = argparse.ArgumentParser(
+        description="Generates the tracking dashboard HTML"
+    )
     parser.add_argument("--input-path", default="")
     parser.add_argument("--data-json", default="")
     parser.add_argument("--output-path", required=True)
     parser.add_argument("--readonly", action="store_true")
     parser.add_argument("--statuses", default="")
-    parser.add_argument("--surface", choices=["auto", "desktop", "web"], default="auto",
-                        help="Force link rendering: auto (userAgent detection), desktop (text), web (clickable links)")
-    parser.add_argument("--ui-lang", default="en",
-                        help="Interface-language code (metadata; this surface has NO selector — option B). Labels themselves come from --labels-json.")
-    parser.add_argument("--labels-json", default="",
-                        help="Optional. Visible labels in the interface language. If given, must carry the EXACT LABELS_EN key set.")
+    parser.add_argument(
+        "--surface",
+        choices=["auto", "desktop", "web"],
+        default="auto",
+        help="Force link rendering: auto (userAgent detection), desktop (text), web (clickable links)",
+    )
+    parser.add_argument(
+        "--ui-lang",
+        default="en",
+        help="Interface-language code (metadata; this surface has NO selector — option B). Labels themselves come from --labels-json.",
+    )
+    parser.add_argument(
+        "--labels-json",
+        default="",
+        help="Optional. Visible labels in the interface language. If given, must carry the EXACT LABELS_EN key set.",
+    )
     args = parser.parse_args()
 
     if args.data_json:
@@ -692,7 +720,9 @@ def main():
             print(f"\u274c Invalid JSON: {e}", file=sys.stderr)
             sys.exit(1)
         # normalize
-        entries = [{f: str(d.get(f, "") or "").strip() for f in FIELDNAMES} for d in entries]
+        entries = [
+            {f: str(d.get(f, "") or "").strip() for f in FIELDNAMES} for d in entries
+        ]
     elif args.input_path and Path(args.input_path).exists():
         entries = parse_csv(Path(args.input_path).read_text(encoding="utf-8"))
     else:
@@ -721,17 +751,26 @@ def main():
             sys.exit(1)
         got, required = set(supplied), set(LABELS_EN)
         if got != required:
-            print(f"\u274c Invalid labels — missing: {sorted(required - got)} ; extra: {sorted(got - required)}", file=sys.stderr)
+            print(
+                f"\u274c Invalid labels — missing: {sorted(required - got)} ; extra: {sorted(got - required)}",
+                file=sys.stderr,
+            )
             sys.exit(1)
         labels = supplied
 
-    html = build_html(entries, statuses, args.readonly, args.surface, args.ui_lang, labels)
+    html = build_html(
+        entries, statuses, args.readonly, args.surface, args.ui_lang, labels
+    )
     out = Path(args.output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html, encoding="utf-8")
     mode = "read-only" if args.readonly else "editable"
-    print(f"\u2705 Dashboard HTML generated ({mode}, {len(entries)} application(s)): {out}")
-    print(f"   - interface language: {args.ui_lang}{' (localized labels supplied)' if args.labels_json else ' (English default labels)'}")
+    print(
+        f"\u2705 Dashboard HTML generated ({mode}, {len(entries)} application(s)): {out}"
+    )
+    print(
+        f"   - interface language: {args.ui_lang}{' (localized labels supplied)' if args.labels_json else ' (English default labels)'}"
+    )
 
 
 if __name__ == "__main__":

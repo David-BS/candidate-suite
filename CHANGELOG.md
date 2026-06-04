@@ -10,6 +10,14 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
+## [0.16.3] — 2026-06-04
+
+### Changed
+- **Adopted `ruff` for linting and formatting (CI quality stage).** The package now passes `ruff check` and `ruff format`. Behavior-neutral: lint cleanup (removed unused imports, dropped `f` prefixes on placeholder-less f-strings, removed a stray walrus assignment, renamed an ambiguous loop variable) plus a one-time formatting pass across all 20 scripts. No logic changed; all 20 scripts compile. `E402` (import-not-at-top) is ignored by config — see `pyproject.toml`.
+
+### Added
+- `pyproject.toml` — central `ruff` (lint + format) and `pytest` configuration (repo meta; not part of the packaged skill).
+
 ## [0.16.2] — 2026-06-04
 
 ### Changed
