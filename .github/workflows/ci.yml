@@ -39,6 +39,9 @@ jobs:
 
       - name: Tests (pytest — TST-1 slot)
         run: |
-          pytest tests/ ; ec=$?
-          if [ $ec -eq 5 ]; then echo "No tests collected yet (TST-1 pending)."; exit 0; fi
-          exit $ec
+          pytest tests/ || ec=$?
+          if [ "${ec:-0}" -eq 5 ]; then
+            echo "No tests collected yet (TST-1 pending)."
+            exit 0
+          fi
+          exit "${ec:-0}"
