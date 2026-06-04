@@ -41,13 +41,18 @@ def convert(input_path, output_path=None, outdir=None):
 
     soffice = find_soffice()
     if not soffice:
-        print("❌ LibreOffice introuvable : conversion .docx → PDF impossible "
-              "dans cet environnement.", file=sys.stderr)
+        print(
+            "❌ LibreOffice introuvable : conversion .docx → PDF impossible "
+            "dans cet environnement.",
+            file=sys.stderr,
+        )
         print("   → La lettre reste parfaitement utilisable en .docx.", file=sys.stderr)
         sys.exit(3)
 
-    target_dir = Path(outdir) if outdir else (
-        Path(output_path).parent if output_path else inp.parent
+    target_dir = (
+        Path(outdir)
+        if outdir
+        else (Path(output_path).parent if output_path else inp.parent)
     )
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -55,10 +60,13 @@ def convert(input_path, output_path=None, outdir=None):
     # is already used elsewhere in the session.
     with tempfile.TemporaryDirectory() as profile:
         cmd = [
-            soffice, "--headless",
+            soffice,
+            "--headless",
             f"-env:UserInstallation=file://{profile}",
-            "--convert-to", "pdf",
-            "--outdir", str(target_dir),
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            str(target_dir),
             str(inp),
         ]
         try:

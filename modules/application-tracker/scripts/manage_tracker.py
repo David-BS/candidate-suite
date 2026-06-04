@@ -73,8 +73,15 @@ from pathlib import Path
 
 
 FIELDNAMES = [
-    "date", "company", "position", "language",
-    "status", "deliverables", "conversation", "title", "notes",
+    "date",
+    "company",
+    "position",
+    "language",
+    "status",
+    "deliverables",
+    "conversation",
+    "title",
+    "notes",
 ]
 
 # `title` (DRV-5): the REAL title of the most recently linked conversation, captured at
@@ -189,7 +196,9 @@ def upsert_entries(existing, new_entries):
                     # first activity: never overwrite an existing date
                     if not merged.get("date"):
                         merged["date"] = val
-                elif val and not (field == "status" and val == DEFAULT_STATUS and merged.get("status")):
+                elif val and not (
+                    field == "status" and val == DEFAULT_STATUS and merged.get("status")
+                ):
                     merged[field] = val
             by_key[k] = merged
         else:
@@ -233,12 +242,12 @@ ARROW = "\u2192"  # →
 # Language-agnostic marker glyphs (DRV-9). ◆ = current / not yet linked;
 # ✗ = deleted. Linked state (date → uuid) is unchanged. Glyph-only since the CSV
 # migration: the legacy FR-token backward-compat was dropped (EN-canonical).
-HERE_GLYPH = "\u25C6"  # ◆
-DEL_GLYPH = "\u2717"   # ✗
+HERE_GLYPH = "\u25c6"  # ◆
+DEL_GLYPH = "\u2717"  # ✗
 ICI_RE = re.compile(r"\u25C6")
 DEL_RE = re.compile(r"\u2717")
 DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
-CANONICAL_PREFIX = "\U0001F4CB"  # 📋
+CANONICAL_PREFIX = "\U0001f4cb"  # 📋
 
 
 def parse_marker(m):
@@ -323,7 +332,13 @@ def _index_scan(scan):
             dates.append(d)
         if comp and pos and uid:
             by_key.setdefault((comp.lower(), pos.lower()), []).append(
-                {"uuid": uid, "date": d, "title": title, "company": comp, "position": pos}
+                {
+                    "uuid": uid,
+                    "date": d,
+                    "title": title,
+                    "company": comp,
+                    "position": pos,
+                }
             )
     floor = min(dates) if dates else ""
     return uuids, by_uuid, by_key, floor
@@ -365,25 +380,39 @@ def reconcile(existing, scan, floor=None, add_new=True):
             date, state, uid = parse_marker(m)
             if state == "current":
                 if recent and recent["uuid"]:
-                    out_markers.append(make_linked(date or recent["date"], recent["uuid"]))
+                    out_markers.append(
+                        make_linked(date or recent["date"], recent["uuid"])
+                    )
                     promoted += 1
                 else:
-                    out_markers.append(format_marker(date, "current") if date else m)  # not found → stays current (◆)
+                    out_markers.append(
+                        format_marker(date, "current") if date else m
+                    )  # not found → stays current (◆)
             elif state == "linked":
                 # ✗ marking MANDATORY if conclusive: linked, absent from the
                 # scan, and date ≥ floor (hence within the enumerated slice).
-                if uid and uid not in scanned_uuids and floor and date and date >= floor:
+                if (
+                    uid
+                    and uid not in scanned_uuids
+                    and floor
+                    and date
+                    and date >= floor
+                ):
                     out_markers.append(format_marker(date, "deleted"))
                     deleted += 1
                 else:
                     out_markers.append(m)  # present, or < floor (undetermined)
             else:
                 # deleted stays ✗; a bare date is left untouched
-                out_markers.append(format_marker(date, "deleted") if state == "deleted" else m)
+                out_markers.append(
+                    format_marker(date, "deleted") if state == "deleted" else m
+                )
 
         # Union: add any scanned conversation for this key whose UUID
         # is not already a marker (application resumed another day, etc.).
-        present = {parse_marker(x)[2] for x in out_markers if parse_marker(x)[1] == "linked"}
+        present = {
+            parse_marker(x)[2] for x in out_markers if parse_marker(x)[1] == "linked"
+        }
         for c in cands:
             if c["uuid"] and c["uuid"] not in present:
                 out_markers.append(make_linked(c["date"], c["uuid"]))
@@ -394,7 +423,9 @@ def reconcile(existing, scan, floor=None, add_new=True):
         row["conversation"] = MULTI_SEP.join(out_markers)
 
         # title: real title of the most recent linked conv (rewritten each run).
-        linked_here = [parse_marker(x)[2] for x in out_markers if parse_marker(x)[1] == "linked"]
+        linked_here = [
+            parse_marker(x)[2] for x in out_markers if parse_marker(x)[1] == "linked"
+        ]
         best = _most_recent_title(linked_here, by_uuid)
         if best:
             row["title"] = best
@@ -423,7 +454,11 @@ def reconcile(existing, scan, floor=None, add_new=True):
     # `📋 {first-activity date} - company - position` (date STABLE over time).
     hygiene = []
     for row in rows:
-        comp, pos, d0 = row.get("company", ""), row.get("position", ""), row.get("date", "")
+        comp, pos, d0 = (
+            row.get("company", ""),
+            row.get("position", ""),
+            row.get("date", ""),
+        )
         canonical = "%s %s - %s - %s" % (CANONICAL_PREFIX, d0, comp, pos)
         for m in split_multi(row.get("conversation", "")):
             date, state, uid = parse_marker(m)
@@ -434,14 +469,24 @@ def reconcile(existing, scan, floor=None, add_new=True):
                 continue
             real = (info.get("title") or "").strip()
             if real and real != canonical:
-                hygiene.append({
-                    "uuid": uid, "current_title": real, "proposed_title": canonical,
-                    "company": comp, "position": pos, "date": d0,
-                })
+                hygiene.append(
+                    {
+                        "uuid": uid,
+                        "current_title": real,
+                        "proposed_title": canonical,
+                        "company": comp,
+                        "position": pos,
+                        "date": d0,
+                    }
+                )
 
     summary = {
-        "promoted": promoted, "deleted": deleted, "new": new_count,
-        "linked_added": linked_added, "floor": floor, "hygiene": hygiene,
+        "promoted": promoted,
+        "deleted": deleted,
+        "new": new_count,
+        "linked_added": linked_added,
+        "floor": floor,
+        "hygiene": hygiene,
     }
     return rows, summary
 
@@ -511,7 +556,9 @@ def cmd_bulk(args):
     merged = upsert_entries(existing, new_entries)
     out = resolve_output_path(args)
     write_output(out, render_csv(merged))
-    print(f"✅ {len(new_entries)} candidature(s) traitée(s). Total : {len(merged)} ligne(s).")
+    print(
+        f"✅ {len(new_entries)} candidature(s) traitée(s). Total : {len(merged)} ligne(s)."
+    )
     print(f"   {out}")
 
 
@@ -528,7 +575,9 @@ def cmd_batch_status(args):
     merged, applied = apply_status_changes(existing, changes)
     out = resolve_output_path(args)
     write_output(out, render_csv(merged))
-    print(f"✅ {applied} changement(s) de statut appliqué(s). Total : {len(merged)} ligne(s).")
+    print(
+        f"✅ {applied} changement(s) de statut appliqué(s). Total : {len(merged)} ligne(s)."
+    )
     print(f"   {out}")
 
 
@@ -543,7 +592,8 @@ def cmd_reconcile(args):
         print("❌ scan-json doit être une liste JSON", file=sys.stderr)
         sys.exit(1)
     rows, summary = reconcile(
-        existing, scan,
+        existing,
+        scan,
         floor=getattr(args, "floor", None),
         add_new=not getattr(args, "no_add_new", False),
     )
@@ -600,15 +650,24 @@ def main():
     p.add_argument("--input-path", default="")
     p.add_argument("--output-path", default="")
     p.add_argument("--output-dir", default=".")
-    p.add_argument("--scan-json", required=True,
-                   help='JSON: [{"uuid","date","company","position","title"}, ...]. '
-                        'An entry without company+position serves only enumeration '
-                        '(floor + deletion detection), without creating/promoting.')
-    p.add_argument("--floor", default="",
-                   help="Scan floor YYYY-MM-DD (default: min of the scan dates). "
-                        "Any linked marker ≥ floor and absent = conclusive → ✗.")
-    p.add_argument("--no-add-new", action="store_true",
-                   help="Do not create new applications from the scan.")
+    p.add_argument(
+        "--scan-json",
+        required=True,
+        help='JSON: [{"uuid","date","company","position","title"}, ...]. '
+        "An entry without company+position serves only enumeration "
+        "(floor + deletion detection), without creating/promoting.",
+    )
+    p.add_argument(
+        "--floor",
+        default="",
+        help="Scan floor YYYY-MM-DD (default: min of the scan dates). "
+        "Any linked marker ≥ floor and absent = conclusive → ✗.",
+    )
+    p.add_argument(
+        "--no-add-new",
+        action="store_true",
+        help="Do not create new applications from the scan.",
+    )
     p.set_defaults(func=cmd_reconcile)
 
     args = parser.parse_args()

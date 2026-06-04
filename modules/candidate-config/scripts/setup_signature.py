@@ -34,7 +34,9 @@ from pathlib import Path
 try:
     from PIL import Image
 except ImportError:
-    print("❌ Pillow requis : pip install Pillow --break-system-packages", file=sys.stderr)
+    print(
+        "❌ Pillow requis : pip install Pillow --break-system-packages", file=sys.stderr
+    )
     sys.exit(1)
 
 
@@ -58,6 +60,7 @@ RESIZE_TIMEOUT_SECONDS = 10
 
 class ResizeTimeout(Exception):
     """Exception raised if resizing exceeds the timeout."""
+
     pass
 
 
@@ -110,9 +113,19 @@ def resize_with_timeout(img, max_width, max_height, target_bytes, output_format)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Configures the signature for cover-letter-generator")
-    parser.add_argument("--input-path", required=True, help="Path to the signature image (PNG/JPG/GIF/BMP)")
-    parser.add_argument("--output-path", default="", help="If provided, writes the base64 to this file (otherwise stdout)")
+    parser = argparse.ArgumentParser(
+        description="Configures the signature for cover-letter-generator"
+    )
+    parser.add_argument(
+        "--input-path",
+        required=True,
+        help="Path to the signature image (PNG/JPG/GIF/BMP)",
+    )
+    parser.add_argument(
+        "--output-path",
+        default="",
+        help="If provided, writes the base64 to this file (otherwise stdout)",
+    )
     args = parser.parse_args()
 
     in_path = Path(args.input_path)
@@ -131,7 +144,10 @@ def main():
 
     if img.format not in ACCEPTED_FORMATS:
         print(f"❌ Format non supporté : {img.format}", file=sys.stderr)
-        print(f"   Formats acceptés : {', '.join(sorted(ACCEPTED_FORMATS))}.", file=sys.stderr)
+        print(
+            f"   Formats acceptés : {', '.join(sorted(ACCEPTED_FORMATS))}.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     original_size = in_path.stat().st_size
@@ -139,18 +155,29 @@ def main():
     out_format = "PNG" if img.format == "PNG" else "JPEG"
 
     # If the image is already under the limit, no need to resize
-    if original_size <= MAX_IMAGE_BYTES and max(img.size) <= max(TARGET_MAX_WIDTH, TARGET_MAX_HEIGHT):
+    if original_size <= MAX_IMAGE_BYTES and max(img.size) <= max(
+        TARGET_MAX_WIDTH, TARGET_MAX_HEIGHT
+    ):
         # Encode directly
         with open(in_path, "rb") as f:
             raw_bytes = f.read()
         final_size = original_size
         final_dims = original_dims
-        print(f"✅ Image déjà optimale : {final_size} octets, {final_dims[0]}×{final_dims[1]} px", file=sys.stderr)
+        print(
+            f"✅ Image déjà optimale : {final_size} octets, {final_dims[0]}×{final_dims[1]} px",
+            file=sys.stderr,
+        )
     else:
         # Resizing needed
-        print(f"ℹ️ Image à redimensionner : {original_size} octets, {original_dims[0]}×{original_dims[1]} px", file=sys.stderr)
-        print(f"   Cible : ≤ {MAX_IMAGE_BYTES} octets, max {TARGET_MAX_WIDTH}×{TARGET_MAX_HEIGHT} px", file=sys.stderr)
-        print(f"   (Cela peut prendre quelques secondes...)", file=sys.stderr)
+        print(
+            f"ℹ️ Image à redimensionner : {original_size} octets, {original_dims[0]}×{original_dims[1]} px",
+            file=sys.stderr,
+        )
+        print(
+            f"   Cible : ≤ {MAX_IMAGE_BYTES} octets, max {TARGET_MAX_WIDTH}×{TARGET_MAX_HEIGHT} px",
+            file=sys.stderr,
+        )
+        print("   (Cela peut prendre quelques secondes...)", file=sys.stderr)
 
         # Convert RGBA → RGB when outputting JPEG (no alpha)
         if out_format == "JPEG" and img.mode in ("RGBA", "LA", "P"):
@@ -165,26 +192,44 @@ def main():
                 img, TARGET_MAX_WIDTH, TARGET_MAX_HEIGHT, MAX_IMAGE_BYTES, out_format
             )
             final_size = len(raw_bytes)
-            print(f"✅ Redimensionnée : {final_size} octets, {final_dims[0]}×{final_dims[1]} px", file=sys.stderr)
+            print(
+                f"✅ Redimensionnée : {final_size} octets, {final_dims[0]}×{final_dims[1]} px",
+                file=sys.stderr,
+            )
         except ResizeTimeout:
-            print(f"⏱️ Timeout : le redimensionnement a dépassé {RESIZE_TIMEOUT_SECONDS} secondes.", file=sys.stderr)
+            print(
+                f"⏱️ Timeout : le redimensionnement a dépassé {RESIZE_TIMEOUT_SECONDS} secondes.",
+                file=sys.stderr,
+            )
             print("", file=sys.stderr)
             print("Pour continuer, choisis une option :", file=sys.stderr)
             print("", file=sys.stderr)
             print("  1. Réduire l'image toi-même puis relancer :", file=sys.stderr)
-            print(f"     - Cible : moins de 500 Ko, dimensions ~600×400 px max", file=sys.stderr)
-            print(f"     - macOS : Aperçu → Outils → Ajuster la taille", file=sys.stderr)
-            print(f"     - Windows : Paint → Redimensionner", file=sys.stderr)
-            print(f"     - En ligne : tinypng.com, squoosh.app", file=sys.stderr)
+            print(
+                "     - Cible : moins de 500 Ko, dimensions ~600×400 px max",
+                file=sys.stderr,
+            )
+            print("     - macOS : Aperçu → Outils → Ajuster la taille", file=sys.stderr)
+            print("     - Windows : Paint → Redimensionner", file=sys.stderr)
+            print("     - En ligne : tinypng.com, squoosh.app", file=sys.stderr)
             print("", file=sys.stderr)
-            print("  2. Générer sans signature pour le moment et reconfigurer plus tard.", file=sys.stderr)
+            print(
+                "  2. Générer sans signature pour le moment et reconfigurer plus tard.",
+                file=sys.stderr,
+            )
             sys.exit(3)
 
     # Encode to base64
     b64 = base64.b64encode(raw_bytes).decode("ascii")
     if len(b64) > MAX_BASE64_CHARS:
-        print(f"❌ Image encore trop volumineuse après optimisation : {len(b64)} chars base64", file=sys.stderr)
-        print(f"   (limite : {MAX_BASE64_CHARS}). Fournir une image plus simple.", file=sys.stderr)
+        print(
+            f"❌ Image encore trop volumineuse après optimisation : {len(b64)} chars base64",
+            file=sys.stderr,
+        )
+        print(
+            f"   (limite : {MAX_BASE64_CHARS}). Fournir une image plus simple.",
+            file=sys.stderr,
+        )
         sys.exit(4)
 
     # Output
@@ -192,13 +237,16 @@ def main():
         Path(args.output_path).parent.mkdir(parents=True, exist_ok=True)
         Path(args.output_path).write_text(b64, encoding="ascii")
         print(f"✅ Signature encodée : {args.output_path}", file=sys.stderr)
-        print(f"   {len(b64)} caractères base64 (≈ {len(raw_bytes)/1024:.1f} Ko décodés)", file=sys.stderr)
+        print(
+            f"   {len(b64)} caractères base64 (≈ {len(raw_bytes) / 1024:.1f} Ko décodés)",
+            file=sys.stderr,
+        )
     else:
         # Stdout: just the base64, for easy capture
         print(b64)
         print(f"ℹ️ {len(b64)} caractères base64 produits.", file=sys.stderr)
-        print(f"   À stocker en mémoire via : memory_user_edits add", file=sys.stderr)
-        print(f"   sous la clé : [CONFIG] Signature base64", file=sys.stderr)
+        print("   À stocker en mémoire via : memory_user_edits add", file=sys.stderr)
+        print("   sous la clé : [CONFIG] Signature base64", file=sys.stderr)
 
 
 if __name__ == "__main__":

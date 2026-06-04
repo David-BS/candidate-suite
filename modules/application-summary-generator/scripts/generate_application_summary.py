@@ -37,11 +37,13 @@ def iso639_1(value):
     fills a single neutral template. `--language` is form-validated metadata only; any
     ISO code works.
     """
-    if not re.fullmatch(r'[a-z]{2}', value or ''):
+    if not re.fullmatch(r"[a-z]{2}", value or ""):
         raise argparse.ArgumentTypeError(
             f"--language must be a 2-letter ISO 639-1 code (lowercase), e.g. en, fr; got: {value!r}"
         )
     return value
+
+
 import json
 import sys
 from pathlib import Path
@@ -52,14 +54,14 @@ from pathlib import Path
 # key set is EXACTLY this — no invented or omitted section (anti-hallucination
 # guardrail). The structure is fixed; only the linguistic realization is the model's.
 REQUIRED_LABELS = {
-    'title',
-    'section_sw',
-    'sub_strengths',
-    'sub_weaknesses',
-    'section_pitch',
-    'pitch_intro',
-    'section_tp',
-    'tp_intro',
+    "title",
+    "section_sw",
+    "sub_strengths",
+    "sub_weaknesses",
+    "section_pitch",
+    "pitch_intro",
+    "section_tp",
+    "tp_intro",
 }
 
 
@@ -67,90 +69,102 @@ def generate_summary_md(labels, data):
     """Generates the complete Markdown content."""
     t = labels
     parts = []
-    
+
     # Title + meta
     parts.append(f"# {t['title']}\n")
-    parts.append(f'<p class="meta">{data.get("candidate_name", "")} — {data.get("job_title", "")} — {data.get("company_name", "")}</p>')
+    parts.append(
+        f'<p class="meta">{data.get("candidate_name", "")} — {data.get("job_title", "")} — {data.get("company_name", "")}</p>'
+    )
     parts.append(f'<p class="meta-date">{data.get("date", "")}</p>\n')
-    
+
     # Opening tip (α)
-    opening = data.get('opening_tip')
+    opening = data.get("opening_tip")
     if opening:
         parts.append(f"> [!TIP-BOX] {opening}\n")
-    
+
     # === STRENGTHS & WEAKNESSES ===
     parts.append(f"## {t['section_sw']}\n")
-    
+
     # Strengths (green heading via [+])
     parts.append(f"### {t['sub_strengths']}\n")
-    for item in data.get('strengths', []):
-        title = item.get('title', '')
-        context = item.get('context', '')
+    for item in data.get("strengths", []):
+        title = item.get("title", "")
+        context = item.get("context", "")
         parts.append(f"- **[+]** **{title}** — {context}")
     parts.append("")  # blank line
-    
+
     # Weaknesses (orange heading via [-])
     parts.append(f"### {t['sub_weaknesses']}\n")
-    for item in data.get('weaknesses', []):
-        title = item.get('title', '')
-        approach = item.get('approach', '')
+    for item in data.get("weaknesses", []):
+        title = item.get("title", "")
+        approach = item.get("approach", "")
         parts.append(f"- **[-]** **{title}** — {approach}")
     parts.append("")
-    
+
     # Tip after weaknesses (γ.3)
-    tip_w = data.get('tip_after_weaknesses')
+    tip_w = data.get("tip_after_weaknesses")
     if tip_w:
         parts.append(f"> [!TIP] {tip_w}\n")
-    
+
     # === PITCH ===
     parts.append(f"## {t['section_pitch']}\n")
     parts.append(f"*{t['pitch_intro']}*\n")
-    
-    pitch = data.get('pitch', [])
+
+    pitch = data.get("pitch", [])
     for i, sentence in enumerate(pitch, start=1):
         parts.append(f"{i}. {sentence}")
     parts.append("")
-    
+
     # Tip after pitch (α)
-    tip_p = data.get('tip_after_pitch')
+    tip_p = data.get("tip_after_pitch")
     if tip_p:
         parts.append(f"> [!TIP-BOX] {tip_p}\n")
-    
+
     # === TALKING POINTS ===
     parts.append(f"## {t['section_tp']}\n")
     parts.append(f"*{t['tp_intro']}*\n")
-    
-    for tp in data.get('talking_points', []):
-        title = tp.get('title', '')
-        content = tp.get('content', '')
+
+    for tp in data.get("talking_points", []):
+        title = tp.get("title", "")
+        content = tp.get("content", "")
         parts.append(f"- **{title}** — {content}")
     parts.append("")
-    
+
     # Final tip (γ.3)
-    tip_tp = data.get('tip_after_talking_points')
+    tip_tp = data.get("tip_after_talking_points")
     if tip_tp:
         parts.append(f"> [!TIP] {tip_tp}\n")
-    
-    return '\n'.join(parts)
+
+    return "\n".join(parts)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generates an application summary in Markdown")
-    parser.add_argument('--language', required=True, type=iso639_1,
-                        metavar='LANG', help='ISO 639-1 language code (lowercase), e.g. en, fr')
-    parser.add_argument('--output-path', required=True, help='Output .md path')
-    parser.add_argument('--data-json', required=True)
-    parser.add_argument('--labels-json', required=True,
-                        help='JSON object of structure labels in the target language (exact key set required)')
-    
+    parser = argparse.ArgumentParser(
+        description="Generates an application summary in Markdown"
+    )
+    parser.add_argument(
+        "--language",
+        required=True,
+        type=iso639_1,
+        metavar="LANG",
+        help="ISO 639-1 language code (lowercase), e.g. en, fr",
+    )
+    parser.add_argument("--output-path", required=True, help="Output .md path")
+    parser.add_argument("--data-json", required=True)
+    parser.add_argument(
+        "--labels-json",
+        required=True,
+        help="JSON object of structure labels in the target language (exact key set required)",
+    )
+
     args = parser.parse_args()
-    
+
     try:
         data = json.loads(args.data_json)
     except json.JSONDecodeError as e:
         print(f"❌ JSON invalide : {e}", file=sys.stderr)
         sys.exit(1)
-    
+
     try:
         labels = json.loads(args.labels_json)
     except json.JSONDecodeError as e:
@@ -158,34 +172,47 @@ def main():
         sys.exit(1)
     if not isinstance(labels, dict) or set(labels) != REQUIRED_LABELS:
         got = set(labels) if isinstance(labels, dict) else set()
-        print(f"❌ Libellés invalides — manquants: {sorted(REQUIRED_LABELS - got)} ; en trop: {sorted(got - REQUIRED_LABELS)}", file=sys.stderr)
+        print(
+            f"❌ Libellés invalides — manquants: {sorted(REQUIRED_LABELS - got)} ; en trop: {sorted(got - REQUIRED_LABELS)}",
+            file=sys.stderr,
+        )
         sys.exit(1)
-    
-    required = ['candidate_name', 'job_title', 'company_name', 'date',
-                'strengths', 'weaknesses', 'pitch', 'talking_points']
+
+    required = [
+        "candidate_name",
+        "job_title",
+        "company_name",
+        "date",
+        "strengths",
+        "weaknesses",
+        "pitch",
+        "talking_points",
+    ]
     missing = [f for f in required if f not in data]
     if missing:
         print(f"❌ Champs manquants : {missing}", file=sys.stderr)
         sys.exit(1)
-    
-    if not isinstance(data['pitch'], list) or len(data['pitch']) != 5:
-        print(f"❌ Le pitch doit être exactement 5 phrases", file=sys.stderr)
+
+    if not isinstance(data["pitch"], list) or len(data["pitch"]) != 5:
+        print("❌ Le pitch doit être exactement 5 phrases", file=sys.stderr)
         sys.exit(1)
-    
+
     md_content = generate_summary_md(labels, data)
-    
+
     output_path = Path(args.output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(md_content, encoding='utf-8')
-    
+    output_path.write_text(md_content, encoding="utf-8")
+
     print(f"✅ Synthèse candidature (Markdown) générée : {output_path}")
     print(f"   - {len(data.get('strengths', []))} forces")
     print(f"   - {len(data.get('weaknesses', []))} faiblesses")
-    print(f"   - {len(pitch := data.get('pitch', []))} phrases de pitch")
+    print(f"   - {len(data.get('pitch', []))} phrases de pitch")
     print(f"   - {len(data.get('talking_points', []))} talking points")
-    print(f"\n💡 Pour exporter en PDF :")
-    print(f"   python md_to_pdf.py --input {output_path} --output {output_path.with_suffix('.pdf')}")
+    print("\n💡 Pour exporter en PDF :")
+    print(
+        f"   python md_to_pdf.py --input {output_path} --output {output_path.with_suffix('.pdf')}"
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

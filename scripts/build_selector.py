@@ -55,8 +55,12 @@ DELIVERABLES = [
 
 # Imposed generation order (passed to Claude via SKILL.md, no longer in the visible prompt)
 GENERATION_ORDER = [
-    "strategic_playbook", "application_summary", "interview_prep",
-    "cover_letter", "quick_reference", "add_to_tracker",
+    "strategic_playbook",
+    "application_summary",
+    "interview_prep",
+    "cover_letter",
+    "quick_reference",
+    "add_to_tracker",
 ]
 
 # Claude's official INTERFACE languages, shown as endonyms (their own language),
@@ -120,13 +124,19 @@ LABELS_EN = {
 }
 
 
-def build_html(memory_items, memory_active, signature_in_memory, already_done, ui_lang, labels):
+def build_html(
+    memory_items, memory_active, signature_in_memory, already_done, ui_lang, labels
+):
     L = labels
     data = {
         "deliverables": [
-            {"id": d[0], "module": d[1],
-             "label": L["deliv_%s_label" % d[0]], "desc": L["deliv_%s_desc" % d[0]],
-             "en": LABELS_EN["deliv_%s_label" % d[0]]}
+            {
+                "id": d[0],
+                "module": d[1],
+                "label": L["deliv_%s_label" % d[0]],
+                "desc": L["deliv_%s_desc" % d[0]],
+                "en": LABELS_EN["deliv_%s_label" % d[0]],
+            }
             for d in DELIVERABLES
         ],
         "order": GENERATION_ORDER,
@@ -463,16 +473,30 @@ def build_html(memory_items, memory_active, signature_in_memory, already_done, u
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Builds the application-tools selection widget (HTML)")
+    parser = argparse.ArgumentParser(
+        description="Builds the application-tools selection widget (HTML)"
+    )
     parser.add_argument("--output-path", required=True)
     parser.add_argument("--memory-json", default="")
-    parser.add_argument("--memory-active", default="true", help="'true' or 'false': is memory active?")
-    parser.add_argument("--signature-in-memory", default="false", help="'true' or 'false': is a signature available?")
+    parser.add_argument(
+        "--memory-active", default="true", help="'true' or 'false': is memory active?"
+    )
+    parser.add_argument(
+        "--signature-in-memory",
+        default="false",
+        help="'true' or 'false': is a signature available?",
+    )
     parser.add_argument("--already-done-json", default="")
-    parser.add_argument("--ui-lang", default="en",
-                        help="Current interface-language code, to pre-select the dropdown (model sets it = memory preference if any, else conversation language).")
-    parser.add_argument("--labels-json", default="",
-                        help="Optional. Visible labels in the interface language. If given, must carry the EXACT LABELS_EN key set.")
+    parser.add_argument(
+        "--ui-lang",
+        default="en",
+        help="Current interface-language code, to pre-select the dropdown (model sets it = memory preference if any, else conversation language).",
+    )
+    parser.add_argument(
+        "--labels-json",
+        default="",
+        help="Optional. Visible labels in the interface language. If given, must carry the EXACT LABELS_EN key set.",
+    )
     args = parser.parse_args()
 
     def parse_opt(s, default):
@@ -499,16 +523,30 @@ def main():
             sys.exit(1)
         got, required = set(supplied), set(LABELS_EN)
         if got != required:
-            print(f"\u274c Invalid labels — missing: {sorted(required - got)} ; extra: {sorted(got - required)}", file=sys.stderr)
+            print(
+                f"\u274c Invalid labels — missing: {sorted(required - got)} ; extra: {sorted(got - required)}",
+                file=sys.stderr,
+            )
             sys.exit(1)
         labels = supplied
 
-    html = build_html(memory_items, memory_active, signature_in_memory, already_done, args.ui_lang, labels)
+    html = build_html(
+        memory_items,
+        memory_active,
+        signature_in_memory,
+        already_done,
+        args.ui_lang,
+        labels,
+    )
     out = Path(args.output_path)
     out.write_text(html, encoding="utf-8")
     print(f"\u2705 Selection widget generated: {out}")
-    print(f"   - {len(memory_items)} memory item(s), memory {'active' if memory_active else 'paused'}, signature {'available' if signature_in_memory else 'absent'}")
-    print(f"   - interface language: {args.ui_lang}{' (localized labels supplied)' if args.labels_json else ' (English default labels)'}")
+    print(
+        f"   - {len(memory_items)} memory item(s), memory {'active' if memory_active else 'paused'}, signature {'available' if signature_in_memory else 'absent'}"
+    )
+    print(
+        f"   - interface language: {args.ui_lang}{' (localized labels supplied)' if args.labels_json else ' (English default labels)'}"
+    )
     print(f"   - {len(already_done)} already done")
 
 

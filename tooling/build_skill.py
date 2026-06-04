@@ -25,6 +25,7 @@ Usage
     python tooling/build_skill.py                 # -> dist/candidate-suite-<x-y-z>.skill
     python tooling/build_skill.py --output-dir /tmp
 """
+
 import argparse
 import os
 import re
@@ -70,8 +71,11 @@ def iter_source_files():
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Package the candidate-suite skill.")
-    ap.add_argument("--output-dir", default=str(REPO_ROOT / "dist"),
-                    help="Output directory (default: ./dist).")
+    ap.add_argument(
+        "--output-dir",
+        default=str(REPO_ROOT / "dist"),
+        help="Output directory (default: ./dist).",
+    )
     args = ap.parse_args()
 
     skill_md = REPO_ROOT / "SKILL.md"
@@ -95,7 +99,9 @@ def main() -> None:
     with zipfile.ZipFile(out_path) as z:
         names = z.namelist()
     assert all(n.startswith(f"{ARCNAME_PREFIX}/") for n in names), "bad arcname prefix"
-    assert not any("__pycache__" in n or n.endswith(EXCLUDE_SUFFIXES) for n in names), "excluded file leaked"
+    assert not any("__pycache__" in n or n.endswith(EXCLUDE_SUFFIXES) for n in names), (
+        "excluded file leaked"
+    )
 
     print(f"Built {out_path}")
     print(f"  version : {version}")

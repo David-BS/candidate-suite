@@ -1,0 +1,23 @@
+# Tooling configuration for the candidate-suite repository.
+# Ruff handles both linting and formatting; pytest is wired for the future
+# TST-1 acceptance suite.
+
+[tool.ruff]
+target-version = "py312"
+# line-length stays at ruff's default (88). Long lines inside string literals
+# (e.g. embedded HTML/CSS in the build_* scripts) are not reflowed by the
+# formatter and are not flagged, since E501 is not in the selected rule set.
+
+[tool.ruff.lint]
+# Default rule set: pyflakes (F) + the import/statement/runtime subset of
+# pycodestyle (E4/E7/E9). These catch real problems (unused imports, undefined
+# names, f-strings without placeholders) without imposing cosmetic style noise.
+select = ["E4", "E7", "E9", "F"]
+# E402 (module import not at top of file) is ignored on purpose: several scripts
+# define a small helper or constant before their imports. This is an
+# organizational choice, not a defect, and reshuffling imports across the
+# package would add risk for no functional gain.
+ignore = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

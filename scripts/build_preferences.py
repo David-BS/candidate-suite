@@ -243,12 +243,22 @@ def main():
     parser = argparse.ArgumentParser(description="Generates the preferences panel")
     parser.add_argument("--output-path", required=True)
     parser.add_argument("--config-json", default="")
-    parser.add_argument("--sig-current", default="none", choices=["project", "session", "none"])
-    parser.add_argument("--tracker-current", default="none", choices=["project", "session", "none"])
-    parser.add_argument("--ui-lang", default="en",
-                        help="Interface-language code (metadata; this surface has NO selector — option B). Labels come from --labels-json.")
-    parser.add_argument("--labels-json", default="",
-                        help="Optional. Visible labels in the interface language. If given, must carry the EXACT LABELS_EN key set.")
+    parser.add_argument(
+        "--sig-current", default="none", choices=["project", "session", "none"]
+    )
+    parser.add_argument(
+        "--tracker-current", default="none", choices=["project", "session", "none"]
+    )
+    parser.add_argument(
+        "--ui-lang",
+        default="en",
+        help="Interface-language code (metadata; this surface has NO selector — option B). Labels come from --labels-json.",
+    )
+    parser.add_argument(
+        "--labels-json",
+        default="",
+        help="Optional. Visible labels in the interface language. If given, must carry the EXACT LABELS_EN key set.",
+    )
     args = parser.parse_args()
 
     config_items = []
@@ -273,17 +283,26 @@ def main():
             sys.exit(1)
         got, required = set(supplied), set(LABELS_EN)
         if got != required:
-            print(f"\u274c Invalid labels — missing: {sorted(required - got)} ; extra: {sorted(got - required)}", file=sys.stderr)
+            print(
+                f"\u274c Invalid labels — missing: {sorted(required - got)} ; extra: {sorted(got - required)}",
+                file=sys.stderr,
+            )
             sys.exit(1)
         labels = supplied
 
-    html = build_html(config_items, args.sig_current, args.tracker_current, args.ui_lang, labels)
+    html = build_html(
+        config_items, args.sig_current, args.tracker_current, args.ui_lang, labels
+    )
     out = Path(args.output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html, encoding="utf-8")
     print(f"\u2705 Preferences panel generated: {out}")
-    print(f"   - {len(config_items)} profile row(s); signature='{args.sig_current}'; tracker='{args.tracker_current}'")
-    print(f"   - interface language: {args.ui_lang}{' (localized labels supplied)' if args.labels_json else ' (English default labels)'}")
+    print(
+        f"   - {len(config_items)} profile row(s); signature='{args.sig_current}'; tracker='{args.tracker_current}'"
+    )
+    print(
+        f"   - interface language: {args.ui_lang}{' (localized labels supplied)' if args.labels_json else ' (English default labels)'}"
+    )
 
 
 if __name__ == "__main__":

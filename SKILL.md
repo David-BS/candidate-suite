@@ -1,13 +1,13 @@
 ---
 name: candidate-suite
-version: 0.16.2
+version: 0.16.3
 updated: 2026-06-04
 description: "All-in-one suite for preparing job applications and interviews, bundled as a single module: cover letter, interview prep, application summary, strategic playbook, one-page reference card, and application tracking, plus candidate-profile configuration. Single entry point: it shows a selection widget, then generates each deliverable through its sub-module's script. Use whenever the user wants to apply for a role, prepare an application or an interview, get tools for a job posting, configure the skill or update their CV or profile, generate a cover letter, produce a summary, playbook, or reference card, track applications or view their application dashboard (e.g. asking where their applications stand), or makes any open-ended request for job-application help. These are intents, not required wordings: match the user's intent regardless of the language the request is written in."
 ---
 
 # candidate-suite
 
-`Version 0.16.2 — 2026-06-04`
+`Version 0.16.3 — 2026-06-04`
 
 **candidate-suite** is an **all-in-one** suite: a single module to install that bundles the orchestrator (this root) and 7 specialized sub-modules. Faced with a job-application request, this skill shows a **selection widget** that turns the vague request into an explicit command, then generates each deliverable through the relevant sub-module's script. **Nothing is written by hand.**
 
