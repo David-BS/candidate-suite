@@ -1,6 +1,6 @@
 # candidate-suite
 
-[![Latest release](https://img.shields.io/github/v/release/David-BS/candidate-suite?label=download&sort=semver)](https://github.com/David-BS/candidate-suite/releases/latest)
+[![Download latest release](https://img.shields.io/badge/download-latest_release-brightgreen)](https://github.com/David-BS/candidate-suite/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **An all-in-one Claude skill for preparing job applications and interviews.**
