@@ -57,16 +57,18 @@ ruff check .                       # lint
 ruff format --check .              # formatting (does not modify files)
 python -m compileall -q scripts modules   # every script must byte-compile
 bandit -c pyproject.toml -r .      # security scan (SAST)
-pytest tests/                      # test slot — see note below
+pytest tests/                      # run the test suite (TST-1)
 ```
 
 Notes:
 
 - `ruff format --check .` only reports; to apply formatting run `ruff format .`.
 - Both `ruff` and `bandit` scan the **whole repository**, including `tooling/`.
-- There is no test suite yet (the acceptance suite, "TST-1", is planned).
-  `pytest` therefore exits with code 5 ("no tests collected"); the CI treats
-  that as success. When you add tests, put them under `tests/`.
+- The test suite ("TST-1") lives under `tests/`. The full suite needs
+  `python-docx` and `markdown` (installed above); the PDF-conversion tests are
+  skipped when `wkhtmltopdf`/`libreoffice` are absent. In CI it runs as the
+  `tests` check on every PR (level L0) and again, with the PDF binaries, at
+  release time.
 
 ## Pull request workflow
 
@@ -74,7 +76,7 @@ Notes:
 flowchart LR
     F["Fork or branch"] --> L["Run gates locally<br/>ruff &middot; bandit &middot; compile &middot; pytest"]
     L --> PR["Open a PR to main"]
-    PR --> C{"quality &middot; security &middot; Analyze (python)<br/>all green? branch up to date?"}
+    PR --> C{"quality &middot; security &middot; Analyze (python) &middot; tests<br/>all green? branch up to date?"}
     C -- yes --> M(["Merge"])
     C -- no --> Fix["Fix and push again"]
     Fix --> C

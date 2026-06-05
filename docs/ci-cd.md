@@ -56,16 +56,17 @@ flowchart LR
 
 | Workflow | Trigger | Job (check name) | What it enforces |
 |---|---|---|---|
-| `ci.yml` | PR to `main`, push to `main` | `quality` | `ruff check` (lint) → `ruff format --check` → `python -m compileall scripts modules` → pytest slot |
+| `ci.yml` | PR to `main`, push to `main` | `quality` | `ruff check` (lint) → `ruff format --check` → `python -m compileall scripts modules` |
+| `tests.yml` | PR to `main`, push to `main` | `tests` | pytest suite (TST-1), level L0: stdlib + python-docx + markdown logic; PDF-conversion tests skipped |
 | `security.yml` | PR to `main`, push to `main` | `security` | Bandit SAST: `bandit -c pyproject.toml -r .` over the whole repo |
 | `codeql.yml` | PR to `main`, push to `main`, weekly (Mon 06:00 UTC) | `Analyze (python)` | CodeQL semantic analysis, `security-extended` query suite |
-| `release.yml` | push of a tag `v*` | `build-and-release` | builds the `.skill` and attaches it to a GitHub Release |
+| `release.yml` | push of a tag `v*` | `tests`, `build-and-release` | runs the graded suite (L1, +L2 on `vN.0.0`), then builds the `.skill` and attaches it to a Release — the build `needs:` the tests job |
 
 The release path, on a version tag:
 
 ```mermaid
 flowchart LR
-    T["Push tag v*"] --> B["build_skill.py<br/>build the .skill"] --> R["GitHub Release<br/>attach .skill asset"]
+    T["Push tag v*"] --> TS["tests job<br/>L1 (+L2 on vN.0.0)"] --> B["build_skill.py<br/>build the .skill"] --> R["GitHub Release<br/>attach .skill asset"]
 ```
 
 Design notes:
@@ -80,8 +81,12 @@ Design notes:
   setup". The two are mutually exclusive — do not enable default setup on top of
   this workflow. `security-extended` is chosen deliberately: it is broader than
   the default query suite.
-- The pytest step is a **slot**. With no tests yet, `pytest` exits 5 ("no tests
-  collected") and the step treats that as success. Add tests under `tests/`.
+- Tests live in a **dedicated `tests.yml`** (check `tests`), not folded into
+  `quality`. The suite is **graded**: L0 on every PR/push (stdlib + python-docx
+  + markdown; PDF conversions skipped); at a release tag the `tests` job in
+  `release.yml` runs L1 (+ wkhtmltopdf) and, on a major tag `vN.0.0`, L2 (+
+  LibreOffice). The release build `needs:` that job, so a failing suite blocks
+  the release.
 - `release.yml` carries a `TODO` to resync the interface-language list before
   building. It is a planned addition; the build itself works without it.
 
@@ -143,7 +148,7 @@ wants the same protection.
 
 - Require a pull request before merging.
 - Require status checks to pass: **`quality`**, **`security`**,
-  **`Analyze (python)`**.
+  **`Analyze (python)`**, **`tests`**.
 - Require branches to be up to date before merging.
 - Block force pushes; restrict deletions; do not allow bypassing (admins
   included).
@@ -190,8 +195,8 @@ get the same posture in your fork:
    secret scanning + push protection, and Dependabot alerts + security updates.
    CodeQL is picked up automatically from `codeql.yml` on the first run — do not
    also enable CodeQL default setup.
-4. **Recreate branch protection** on your default branch with the three required
-   checks (`quality`, `security`, `Analyze (python)`) and "require branches up
+4. **Recreate branch protection** on your default branch with the four required
+   checks (`quality`, `security`, `Analyze (python)`, `tests`) and "require branches up
    to date" (Section 5).
 5. **Recreate the code-scanning ruleset** (CodeQL, High+/Errors) so alerts
    block merges (Section 5).
@@ -211,6 +216,7 @@ Layer B.
 | `quality` required check | B (branch) | broken lint/format/compile |
 | `security` required check | B (branch) | Bandit finding |
 | `Analyze (python)` required check | B (branch) | CodeQL analysis failure |
+| `tests` required check | B (branch) | failing test (TST-1, level L0) |
 | Code-scanning ruleset | B (ruleset) | CodeQL **alerts** ≥ High / Errors |
 | Secret scanning + push protection | B (Adv. Security) | a secret at push time |
 | Dependabot alerts / security updates | B (Adv. Security) | vulnerable dependency (alerts; auto-fix PRs) |
