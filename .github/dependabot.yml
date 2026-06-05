@@ -4,9 +4,10 @@
 # tag in .github/workflows/. You just review and merge — no manual watching of
 # each action's Releases page.
 #
-# Scope: only the github-actions ecosystem. The skill's Python code uses the
-# standard library only (no requirements.txt / pyproject to track), so no pip
-# ecosystem is needed.
+# Scope: only the github-actions ecosystem. The skill's Python dependencies
+# (python-docx, markdown) are provided by the runtime environment and are not
+# declared in a requirements.txt / pyproject, so there is no Python manifest for
+# a pip ecosystem to track.
 
 version: 2
 updates:

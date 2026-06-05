@@ -108,13 +108,21 @@ Design notes:
   pollute `git blame`. Activate locally with
   `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
+**Runtime dependencies (environment-provided, not declared).** A few scripts use
+`python-docx` (cover letter), `markdown` (the HTML stage of PDF export), and the
+`wkhtmltopdf` / `libreoffice` binaries (PDF conversion). The Claude execution
+environment provides these; they are intentionally **not** pinned in a manifest.
+A fork must ensure its environment provides them to run those scripts.
+
 ---
 
 ## 4. Dependabot (Layer A — `.github/dependabot.yml`)
 
-Scope: the **`github-actions`** ecosystem only (the Python code has no
-third-party dependencies). Dependabot opens pull requests that bump the action
-tags pinned in `.github/workflows/`, on a **monthly** cadence.
+Scope: the **`github-actions`** ecosystem only. The skill's Python dependencies
+(`python-docx`, `markdown`) are provided by the runtime environment and are not
+declared in a manifest, so there is no Python dependency file for a pip ecosystem
+to track. Dependabot opens pull requests that bump the action tags pinned in
+`.github/workflows/`, on a **monthly** cadence.
 
 Important distinction: the monthly cadence governs **version updates**.
 **Security updates** (vulnerability-driven fixes) are immediate and are
@@ -160,8 +168,10 @@ the threshold.
   **grouped security updates** — on.
 - **Dependency graph** — on.
 - **Private vulnerability reporting** — on (optional but recommended).
-- **Automatic dependency submission** — **off**, deliberately: the skill is
-  standard-library-only, so there are no build-time dependencies to submit.
+- **Automatic dependency submission** — **off**, deliberately: the skill's
+  Python dependencies are provided by the runtime environment and are not
+  declared in a manifest, so there is nothing for dependency submission to
+  detect.
 
 ---
 
