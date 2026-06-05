@@ -30,6 +30,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Guard - tag must match SKILL.md version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          ver="$(sed -n 's/^version:[[:space:]]*//p' SKILL.md | head -1)"
+          echo "tag=$tag  SKILL.md=$ver"
+          if [ "$tag" != "$ver" ]; then
+            echo "::error::Release tag v$tag does not match SKILL.md version $ver. Align SKILL.md or the tag before releasing." >&2
+            exit 1
+          fi
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
