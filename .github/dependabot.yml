@@ -1,0 +1,22 @@
+# Dependabot — keeps the GitHub Actions used by the release workflow up to date.
+# When an action publishes a new version (e.g. one that moves off the deprecated
+# Node 20 runtime to Node 24), Dependabot opens a pull request bumping its pinned
+# tag in .github/workflows/. You just review and merge — no manual watching of
+# each action's Releases page.
+#
+# Scope: only the github-actions ecosystem. The skill's Python code uses the
+# standard library only (no requirements.txt / pyproject to track), so no pip
+# ecosystem is needed.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"           # scans .github/workflows/
+    schedule:
+      interval: "monthly"    # low-noise; security/major bumps still surface
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    open-pull-requests-limit: 5
