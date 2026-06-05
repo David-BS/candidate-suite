@@ -1,11 +1,10 @@
 name: Tests
 
-# Graded test gate (TST-1). The same suite runs at three levels; absent tools
-# are skipped (never failed), so the cost scales with the stakes:
-#   L0 — every PR / push to main: stdlib + python-docx + markdown logic.
-#        PDF-conversion tests are skipped (binaries not installed). Fast.
-#   L1 — release tag v*: + wkhtmltopdf, so the Markdown→PDF conversions run.
-#   L2 — major tag vN.0.0: + LibreOffice, so the DOCX→PDF conversion also runs.
+# Everyday test gate (TST-1) — level L0 on every PR / push to main:
+# stdlib + python-docx + markdown logic. PDF-conversion tests are skipped here
+# (binaries not installed), keeping this gate fast. The heavier levels run at
+# release time, where it matters: L1 (wkhtmltopdf) and L2 (LibreOffice) are
+# driven by the `tests` job in release.yml, which blocks the build if it fails.
 # The job result is always visible as a check; a per-run table is written to the
 # run Summary (stdlib parser, no extra action).
 
@@ -14,7 +13,6 @@ on:
     branches: [main]
   push:
     branches: [main]
-    tags: ["v*"]
 
 permissions:
   contents: read
@@ -34,16 +32,6 @@ jobs:
       # L0 (always): the runtime packages the Claude environment provides.
       - name: Install test dependencies
         run: pip install pytest python-docx markdown
-
-      # L1 (release tag): the Markdown→PDF converter.
-      - name: Install wkhtmltopdf (release tag → L1)
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends wkhtmltopdf
-
-      # L2 (major tag vN.0.0): LibreOffice for the DOCX→PDF conversion.
-      - name: Install LibreOffice (major tag → L2)
-        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref_name, '.0.0')
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libreoffice
 
       - name: Run tests
         run: pytest tests/ --junitxml=report.xml
