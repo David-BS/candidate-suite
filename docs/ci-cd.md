@@ -60,13 +60,13 @@ flowchart LR
 | `tests.yml` | PR to `main`, push to `main` | `tests` | pytest suite (TST-1), level L0: stdlib + python-docx + markdown logic; PDF-conversion tests skipped |
 | `security.yml` | PR to `main`, push to `main` | `security` | Bandit SAST: `bandit -c pyproject.toml -r .` over the whole repo |
 | `codeql.yml` | PR to `main`, push to `main`, weekly (Mon 06:00 UTC) | `Analyze (python)` | CodeQL semantic analysis, `security-extended` query suite |
-| `release.yml` | push of a tag `v*` | `tests`, `build-and-release` | runs the graded suite (L1, +L2 on `vN.0.0`), then builds the `.skill` and attaches it to a Release — the build `needs:` the tests job |
+| `release.yml` | push of a tag `v*` | `tests`, `build-and-release` | runs the graded suite (L1, +L2 on `vN.0.0`), then builds the `.skill` and an acceptance gallery (samples .zip), attaching both to a Release — the build `needs:` the tests job |
 
 The release path, on a version tag:
 
 ```mermaid
 flowchart LR
-    T["Push tag v*"] --> TS["tests job<br/>L1 (+L2 on vN.0.0)"] --> B["build_skill.py<br/>build the .skill"] --> R["GitHub Release<br/>attach .skill asset"]
+    T["Push tag v*"] --> TS["tests job<br/>L1 (+L2 on vN.0.0)"] --> B["build_skill.py<br/>build the .skill"] --> G["build_samples.py<br/>acceptance gallery"] --> R["GitHub Release<br/>attach .skill + samples.zip"]
 ```
 
 Design notes:
@@ -227,5 +227,8 @@ A few caveats worth knowing:
 - **`release.yml` is only exercised on a tag push.** A pull request's gates do
   not run it, so a green PR does not prove the release still works. Validate the
   release path (the `.skill` asset is published) when you next push a `v*` tag.
+  That run also builds the **acceptance gallery** (`tooling/build_samples.py`):
+  one example of every deliverable, from fictional data, attached as a `.zip` —
+  download it to verify on sight that nothing visible broke.
 - Action pins are **floating majors** (e.g. `@v6`); Dependabot proposes bumps
   when a new major ships. Review the PR's compatibility notes before merging.

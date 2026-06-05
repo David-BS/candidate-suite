@@ -8,6 +8,10 @@ name: Release skill
 # On a release tag the suite runs at L1 (wkhtmltopdf → Markdown→PDF exercised);
 # on a major tag vN.0.0 it also runs at L2 (LibreOffice → DOCX→PDF exercised).
 # A failing suite blocks the release entirely.
+#
+# It also builds an "acceptance gallery" (one example of every deliverable, from
+# fictional data) and attaches it to the Release as a .zip, so each version ships
+# a set of pieces to verify on sight that nothing visible broke.
 
 on:
   push:
@@ -104,8 +108,22 @@ jobs:
       - name: Build .skill package
         run: python tooling/build_skill.py --output-dir dist
 
-      - name: Create Release and attach the .skill
+      # Acceptance gallery: one example of every deliverable, from fictional
+      # data, attached to the Release for on-sight review. Needs the PDF
+      # converters, so install them here (this job runs only on a tag).
+      - name: Install gallery dependencies
+        run: |
+          pip install python-docx markdown
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends wkhtmltopdf libreoffice
+
+      - name: Build acceptance gallery
+        run: python tooling/build_samples.py --output-dir dist/samples --zip "dist/candidate-suite-samples-${GITHUB_REF_NAME}.zip"
+
+      - name: Create Release and attach the .skill + gallery
         uses: softprops/action-gh-release@v3
         with:
-          files: dist/*.skill
+          files: |
+            dist/*.skill
+            dist/candidate-suite-samples-*.zip
           generate_release_notes: true
