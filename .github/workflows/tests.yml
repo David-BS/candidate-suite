@@ -1,0 +1,86 @@
+name: Tests
+
+# Graded test gate (TST-1). The same suite runs at three levels; absent tools
+# are skipped (never failed), so the cost scales with the stakes:
+#   L0 — every PR / push to main: stdlib + python-docx + markdown logic.
+#        PDF-conversion tests are skipped (binaries not installed). Fast.
+#   L1 — release tag v*: + wkhtmltopdf, so the Markdown→PDF conversions run.
+#   L2 — major tag vN.0.0: + LibreOffice, so the DOCX→PDF conversion also runs.
+# The job result is always visible as a check; a per-run table is written to the
+# run Summary (stdlib parser, no extra action).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # L0 (always): the runtime packages the Claude environment provides.
+      - name: Install test dependencies
+        run: pip install pytest python-docx markdown
+
+      # L1 (release tag): the Markdown→PDF converter.
+      - name: Install wkhtmltopdf (release tag → L1)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends wkhtmltopdf
+
+      # L2 (major tag vN.0.0): LibreOffice for the DOCX→PDF conversion.
+      - name: Install LibreOffice (major tag → L2)
+        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref_name, '.0.0')
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libreoffice
+
+      - name: Run tests
+        run: pytest tests/ --junitxml=report.xml
+
+      - name: Write test summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+
+          out = os.environ.get("GITHUB_STEP_SUMMARY")
+          lines = ["## Test results", ""]
+          if not os.path.exists("report.xml"):
+              lines.append("No report produced.")
+          else:
+              root = ET.parse("report.xml").getroot()
+              suites = root.findall("testsuite") or [root]
+              total = failures = errors = skipped = 0
+              failed = []
+              for s in suites:
+                  total += int(s.get("tests", 0))
+                  failures += int(s.get("failures", 0))
+                  errors += int(s.get("errors", 0))
+                  skipped += int(s.get("skipped", 0))
+                  for tc in s.findall("testcase"):
+                      if tc.find("failure") is not None or tc.find("error") is not None:
+                          failed.append(f"{tc.get('classname', '')}::{tc.get('name', '')}")
+              passed = total - failures - errors - skipped
+              lines += [
+                  "| Passed | Failed | Errors | Skipped | Total |",
+                  "|---|---|---|---|---|",
+                  f"| {passed} | {failures} | {errors} | {skipped} | {total} |",
+                  "",
+              ]
+              lines.append("All tests passed." if not failed else "### Failures")
+              lines += [f"- `{n}`" for n in failed]
+          with open(out, "a", encoding="utf-8") as f:
+              f.write("\n".join(lines) + "\n")
+          PY

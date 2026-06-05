@@ -1,0 +1,23 @@
+{
+  "sender_name": "Jordan Lee-Carter",
+  "sender_street": "12 Rue de l'Exemple",
+  "sender_postal_code": "75000",
+  "sender_city": "Paris",
+  "sender_email": "jordan.lee@example.com",
+  "sender_phone": "+33 6 00 00 00 00",
+  "sender_linkedin": "linkedin.com/in/jordan-lee-carter",
+  "sender_full_name": "Jordan Lee-Carter",
+  "recruiter_name": "Jane Smith",
+  "recruiter_title": "Head of Talent",
+  "company_name": "Acme Financial Group",
+  "date_letter": "5 June 2026",
+  "job_title": "Head of Engineering",
+  "greeting": "Dear Ms Smith,",
+  "subject_label": "Subject:",
+  "closing": "Yours sincerely,",
+  "paragraph_1_intro": "I am writing to apply for the Head of Engineering role.",
+  "paragraph_2_current": "I currently lead a large agile engineering organisation.",
+  "paragraph_3_experience": "Twenty years in banking IT across payments and data platforms.",
+  "paragraph_4_value": "I would bring delivery rigour and a security-first engineering culture.",
+  "paragraph_5_closing": "I would welcome the opportunity to discuss this further."
+}
