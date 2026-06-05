@@ -10,6 +10,19 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
+## [0.16.5] — 2026-06-05
+
+> Note — version `0.16.4` was consumed by a release **tag** publishing the acceptance gallery with the skill left unchanged at `0.16.3` (release asset `candidate-suite-0-16-3.skill`). The skill version resumes at `0.16.5`; no skill `0.16.4` was ever published.
+
+### Fixed
+- **Selection widget now prints a text fallback (robustness floor), like the other rendered surfaces.** `build_selector.py` was the only widget surface shipping without the canonical `[TEXT FALLBACK …]` stdout block that `build_preferences`, `build_guide` and `build_dashboard` already carried — so a silent blank render of the selector (observed at low model effort) left no text recourse. It now prints the canonical, numbered deliverable list (imposed order, localized labels, "already generated" tag) on every run, relayed unconditionally as a parallel text channel; a numeric/text reply is handled exactly like the widget's Generate click. `SKILL.md` STEP 3/4 wired accordingly. No `LABELS_EN` key added — surface contract unchanged.
+
+### Changed
+- **Harmonized the tracker-guide floor to the silent-failure doctrine.** `build_guide.py` previously read "if it does, relay" (operationally undetectable for a silent failure); it is now UNCONDITIONAL but deliberately LIGHT — a brief outline (tabs in order) on every run plus a ready-made prompt the user can send to expand the full guide on demand, instead of dumping the full prose by default.
+
+### Documentation
+- `SKILL.md`: the rendered-surfaces note now states that preferences/guide/dashboard also print a text floor — unconditional for silently-failing surfaces, reactive for the dashboard (observable hang).
+
 ## [0.16.3] — 2026-06-04
 
 ### Changed

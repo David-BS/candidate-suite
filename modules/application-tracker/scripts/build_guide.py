@@ -333,6 +333,30 @@ def main():
         f"   - interface language: {args.ui_lang}{' (localized labels supplied)' if args.labels_json else ' (English default labels)'}"
     )
 
+    # --- TEXT FALLBACK (robustness floor) — see build_selector.py ------------
+    # The guide is a prose surface that can render blank with a SILENT failure
+    # (undetectable), so the relay is UNCONDITIONAL. But the full prose is
+    # heavy, so the floor is deliberately LIGHT: relay a brief outline (the tab
+    # order below, one short line each) on EVERY run, then offer the user a
+    # ready-made prompt to expand it to the full guide on demand. The full
+    # prose is the localized label set the model already holds. Source of
+    # truth = this script (tab order); the model only recopies it.
+    print()
+    print(
+        "[TEXT FALLBACK \u2014 internal, do NOT quote to the user] The tracker guide "
+        "can render blank (silent failure at low model effort, undetectable). "
+        "ALWAYS relay the brief outline below to the user, in the interface "
+        "language, on EVERY run: the three tabs in order, one short line each. "
+        "Do NOT dump the full guide by default. Then offer a ready-made prompt "
+        "the user can send to expand it, localized to the interface language "
+        "(e.g. 'Walk me through the tracker workflow in detail'); on that "
+        "request, relay the full guide prose (the label set you supplied), "
+        "following the tab order."
+    )
+    print("[TEXT FALLBACK \u2014 guide outline, tabs in order]")
+    for k in ("tab_file", "tab_dash", "tab_docs"):
+        print("  - %s" % labels[k])
+
 
 if __name__ == "__main__":
     main()

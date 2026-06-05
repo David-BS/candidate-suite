@@ -549,6 +549,38 @@ def main():
     )
     print(f"   - {len(already_done)} already done")
 
+    # --- TEXT FALLBACK (robustness floor) -----------------------------------
+    # The widget is an HTML surface rendered by the harness: at low model
+    # effort it can come out as a blank skeleton, and that failure is SILENT
+    # (nothing signals it). We therefore also print the canonical, self-
+    # sufficient deliverable list here, on EVERY run, so the model can relay it
+    # to the user as a parallel text channel. Source of truth = this script
+    # (labels + imposed order); the model only recopies it. The text floor is
+    # never the only input channel — the widget is an additive layer on top of
+    # it, never a replacement for it.
+    print()
+    print(
+        "[TEXT FALLBACK \u2014 internal, do NOT quote to the user] The selection "
+        "widget can render blank (silent failure at low model effort). ALWAYS "
+        "also present the list below to the user, in the interface language, as "
+        "a parallel text channel \u2014 even when you expect the widget to work. "
+        "Invite them to reply with the item numbers (e.g. '1 and 4'); treat that "
+        "reply EXACTLY like the widget's Generate prompt (STEP 4)."
+    )
+    print("[TEXT FALLBACK \u2014 relay this numbered list to the user]")
+    by_id = {d[0]: d for d in DELIVERABLES}
+    for i, did in enumerate(GENERATION_ORDER, 1):
+        if did not in by_id:
+            continue
+        line = "  %d. %s \u2014 %s" % (
+            i,
+            labels["deliv_%s_label" % did],
+            labels["deliv_%s_desc" % did],
+        )
+        if did in already_done:
+            line += " [%s]" % labels["deliv_done_tag"]
+        print(line)
+
 
 if __name__ == "__main__":
     main()
