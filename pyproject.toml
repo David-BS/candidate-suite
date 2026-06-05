@@ -19,5 +19,20 @@ select = ["E4", "E7", "E9", "F"]
 # package would add risk for no functional gain.
 ignore = ["E402"]
 
+[tool.bandit]
+# Security gate (SAST). Bandit reads this section when invoked with
+# `bandit -c pyproject.toml -r .` (requires the `toml` extra).
+# Skips below are deliberate, documented exceptions — not blanket silencing.
+# The dangerous shell case (B602, subprocess with shell=True) stays ACTIVE.
+#   B404  import subprocess            — informational; the suite orchestrates
+#                                         local converters (wkhtmltopdf/soffice).
+#   B603  subprocess without shell=True — this IS the safe form: every call uses
+#                                         a fixed argument LIST, never a shell
+#                                         string, with no user-controlled tokens.
+#   B607  start process with partial path — converters are invoked by name; the
+#                                         skill runs in a controlled environment
+#                                         with a trusted PATH.
+skips = ["B404", "B603", "B607"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
