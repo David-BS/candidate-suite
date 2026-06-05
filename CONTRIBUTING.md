@@ -1,9 +1,13 @@
 # Contributing
 
 Thanks for your interest in `candidate-suite`. This repository ships a single
-Claude **skill** (an orchestrator plus seven internal sub-modules). The Python
-code uses the **standard library only** — there are no third-party runtime
-dependencies to install.
+Claude **skill** (an orchestrator plus seven internal sub-modules). Most of the
+Python code uses the standard library; a few scripts additionally rely on
+packages and binaries **provided by the Claude execution environment** —
+`python-docx` (cover letter), `markdown` plus `wkhtmltopdf` / `libreoffice` (PDF
+export). These are **not declared** in any manifest (there is no
+`requirements.txt` / `pyproject` dependency list); install them locally only if
+you run those scripts or their tests (see Prerequisites).
 
 This guide is for two audiences:
 
@@ -30,6 +34,16 @@ protection, or alter repository settings — that is by design.
 ```bash
 python -m pip install "ruff==0.15.16" "bandit[toml]==1.9.4" pytest
 ```
+
+To run the cover-letter or PDF scripts (and their tests), also install the
+runtime packages the Claude environment normally provides:
+
+```bash
+python -m pip install python-docx markdown
+```
+
+PDF export additionally needs the `wkhtmltopdf` or `libreoffice` binary; tests
+that convert to PDF are skipped when it is absent.
 
 A virtual environment is recommended but not required.
 
