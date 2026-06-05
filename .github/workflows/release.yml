@@ -33,7 +33,7 @@ jobs:
         run: python tooling/build_skill.py --output-dir dist
 
       - name: Create Release and attach the .skill
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: dist/*.skill
           generate_release_notes: true
