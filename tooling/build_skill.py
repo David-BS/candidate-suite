@@ -98,10 +98,10 @@ def main() -> None:
     # integrity self-check
     with zipfile.ZipFile(out_path) as z:
         names = z.namelist()
-    assert all(n.startswith(f"{ARCNAME_PREFIX}/") for n in names), "bad arcname prefix"
-    assert not any("__pycache__" in n or n.endswith(EXCLUDE_SUFFIXES) for n in names), (
-        "excluded file leaked"
-    )
+    if not all(n.startswith(f"{ARCNAME_PREFIX}/") for n in names):
+        raise RuntimeError("integrity check failed: bad arcname prefix")
+    if any("__pycache__" in n or n.endswith(EXCLUDE_SUFFIXES) for n in names):
+        raise RuntimeError("integrity check failed: excluded file leaked")
 
     print(f"Built {out_path}")
     print(f"  version : {version}")
