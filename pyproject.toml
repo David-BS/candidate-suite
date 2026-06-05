@@ -33,6 +33,8 @@ ignore = ["E402"]
 #                                         skill runs in a controlled environment
 #                                         with a trusted PATH.
 skips = ["B404", "B603", "B607"]
+# Test code legitimately uses `assert` (B101) — exclude it from the SAST scan.
+exclude_dirs = ["tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
