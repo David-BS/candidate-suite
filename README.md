@@ -63,7 +63,7 @@ That's it. Then just ask Claude for help with an application and follow the widg
 ├── SKILL.md  CHANGELOG.md  scripts/  modules/  references/   ← the skill (this is what gets packaged)
 ├── tooling/build_skill.py        ← formal packager → builds the .skill
 ├── examples/profile.example.md   ← placeholder profile (configuration shape)
-├── tests/                        ← acceptance suite (planned)
+├── tests/                        ← acceptance suite (TST-1, pytest)
 ├── docs/                         ← design notes
 ├── .github/workflows/release.yml ← CI: build + attach .skill on tag
 ├── .github/dependabot.yml        ← keeps the CI actions up to date
