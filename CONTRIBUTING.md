@@ -64,6 +64,11 @@ Notes:
 
 - `ruff format --check .` only reports; to apply formatting run `ruff format .`.
 - Both `ruff` and `bandit` scan the **whole repository**, including `tooling/`.
+- To preview the deliverables, regenerate the **acceptance gallery** locally:
+  `python tooling/build_samples.py --output-dir dist/samples` (one example of
+  every deliverable, from fictional data). `tests/test_examples.py` rebuilds the
+  cover letters on every run and asserts the acceptance conditions (one page,
+  ratios, signed/unsigned signature variants).
 - The test suite ("TST-1") lives under `tests/`. The full suite needs
   `python-docx` and `markdown` (installed above); the PDF-conversion tests are
   skipped when `wkhtmltopdf`/`libreoffice` are absent. In CI it runs as the

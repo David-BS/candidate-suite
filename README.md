@@ -42,6 +42,10 @@ and deliverables follow the job posting's language.
 2. Download the **`candidate-suite-<version>.skill`** asset.
 3. Add it to your Claude project / install it as a skill in the Claude app.
 
+Each release also attaches a **`candidate-suite-samples-<version>.zip`** — an
+acceptance gallery with one example of every deliverable (fictional data), to
+preview what the skill produces.
+
 That's it. Then just ask Claude for help with an application and follow the widget.
 
 ---
@@ -62,6 +66,7 @@ That's it. Then just ask Claude for help with an application and follow the widg
 .
 ├── SKILL.md  CHANGELOG.md  scripts/  modules/  references/   ← the skill (this is what gets packaged)
 ├── tooling/build_skill.py        ← formal packager → builds the .skill
+├── tooling/build_samples.py      ← builds the acceptance gallery (release samples)
 ├── examples/profile.example.md   ← placeholder profile (configuration shape)
 ├── tests/                        ← acceptance suite (TST-1, pytest)
 ├── docs/                         ← design notes
