@@ -10,7 +10,19 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
-## [0.16.6] — 2026-06-05
+## [0.17.0] — 2026-06-06
+
+### Added
+- **`manage_tracker.py --timezone <IANA>`** on every file-writing subcommand (`init`, `upsert`, `bulk`, `batch-status`, `reconcile`). The filename timestamp zone is now a parameter the model resolves from the candidate locale, instead of a hardcoded constant. New `resolve_timezone()` helper: validates the IANA name via `zoneinfo`, and on an unknown/malformed name warns on stderr and falls back to `Europe/Paris` — a filename op never aborts (robustness floor). No city→zone table (mapping a place to its zone is a model task, same reason LNG-1 dropped the language tables).
+
+### Changed
+- **Locale resolution chain documented (LNG-1 / L1 realized).** The tracker timestamp and the model-composed dates (conversation `◆` marker, conversation-title suggestion) now follow one chain: profile `City` → else host-provided session location → else `Europe/Paris`. The model maps the locale to an IANA zone and passes `--timezone`; the script stamps the instant (model = zone, script = clock). Wired in `SKILL.md`, `candidate-config/GUIDE.md` (locale block reworded — the previous text wrongly implied `zoneinfo` maps a city name) and `application-tracker/GUIDE.md`.
+
+### Fixed
+- **DST-naive snippet removed from `application-tracker/GUIDE.md`.** The conversation-marker date instruction still told the model to compute the date with a fixed `timezone(timedelta(hours=2))` offset (wrong half the year). Replaced with a `zoneinfo`-based one-liner on the resolved IANA zone (DST-handled). Closes the residual the L1 code fix (`0.8.0`) had left in the doc.
+- **Hardcoded "Paris" delinked from all instruction surfaces.** Stray "Paris time" / "Paris date" references in `SKILL.md`, `application-tracker/GUIDE.md` and the `manage_tracker.py` usage comment now read "candidate's local date/time". Example candidate data (fictional Paris address/city) is unchanged — it is illustrative, not logic.
+
+
 
 ### Changed
 - **EN-canonical code sweep completed (closes the "infra 100% EN" gap).** Every remaining runtime `print`/error/help message still in French was translated to English across the 5 generators, the 4 `md_to_pdf.py`, `docx_to_pdf.py`, `fill_cover_letter.py`, `manage_tracker.py` and the 3 candidate-config setup scripts. A two-pass scan (accents **and** accent-free French in string literals) now returns zero residuals — the earlier accent-only claim had missed accent-free French. Stray French JS identifier renamed (`repere` -> `marker`) in `build_dashboard.py`. One French fragment kept on purpose: a comment in `fill_cover_letter.py` quoting the removed `"a completer"` placeholder word-list (historical record).
