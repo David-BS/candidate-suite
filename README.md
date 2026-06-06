@@ -33,6 +33,22 @@ and deliverables follow the job posting's language.
 
 ---
 
+## Scope & compatibility
+
+candidate-suite is built for the **Anthropic Claude ecosystem** and runs inside the
+Claude app. It relies on the Claude skills runtime: a sandboxed code-execution
+environment that runs its bundled scripts, the in-chat selection widget, and the
+app's file delivery. **It is not compatible with other AI assistants.**
+
+The `SKILL.md` packaging format is becoming a cross-vendor standard, so the *manifest*
+is portable — but this skill's engine is **script-driven**: its scripts are the source
+of truth and produce every deliverable. Running it therefore requires a host that
+executes those scripts and renders the widget, which today means the Claude ecosystem.
+Assistants that treat skills as instructions only, or whose sandboxes lack the required
+libraries, cannot run it.
+
+---
+
 ## Download & install
 
 > **Requirements:** a Claude account (the skill runs inside the Claude app). No
