@@ -89,7 +89,7 @@ def lorem_letter_data(signed):
         "recruiter_name": "Jane Smith",
         "recruiter_title": "Head of Talent",
         "company_name": "Acme Financial Group",
-        "date_letter": "5 June 2026",
+        "date_line": "Paris, 5 June 2026",
         "job_title": "Head of Engineering",
         "greeting": "Dear Ms Smith,",
         "subject_label": "Subject:",

@@ -15,7 +15,10 @@ The --data-json JSON must contain the following keys:
     - sender_full_name
     - recruiter_name, recruiter_title (use "Hiring Manager" / "Madame, Monsieur" if unknown)
     - company_name
-    - date_letter (format: "27 May 2026" or "27 mai 2026")
+    - date_line (place-and-date line, composed by the model in the target
+      convention: e.g. "Paris, le 6 juin 2026", "New York, June 6, 2026", or a
+      date-only "6 June 2026" where the locale omits the city — see
+      letter_conventions.md; date formatting per language_style_generic.md)
     - job_title
     - greeting (salutation, e.g.: "Dear Jane Smith," or "Madame, Monsieur,")
     - paragraph_1_intro, paragraph_2_current, paragraph_3_experience,
@@ -200,7 +203,7 @@ def build_replacements(data):
         "{{RECRUITER_NAME}}": "recruiter_name",
         "{{RECRUITER_TITLE}}": "recruiter_title",
         "{{COMPANY_NAME}}": "company_name",
-        "{{DATE_LETTER}}": "date_letter",
+        "{{DATE_LINE}}": "date_line",
         "{{JOB_TITLE}}": "job_title",
         "{{GREETING}}": "greeting",
         "{{SUBJECT_LABEL}}": "subject_label",
@@ -404,7 +407,7 @@ def main():
         "recruiter_name",
         "recruiter_title",
         "company_name",
-        "date_letter",
+        "date_line",
         "job_title",
         "greeting",
         "paragraph_1_intro",

@@ -60,9 +60,26 @@
   where the language marks one), native idiom. The letter is consistently addressed to the
   recipient / organization throughout.
 
+## 6. Place-and-date line (`DATE_LINE` slot)
+
+- The model composes the **whole line** in the target locale's convention — there is no
+  fixed "City, Date" composite in the template (that was a continental/French tic). Examples:
+  `Paris, le 6 juin 2026` (FR), `New York, June 6, 2026` (US EN), `6 giugno 2026` (IT),
+  or a **date-only** line where the locale conventionally omits the place (common in US EN).
+- Date rendering (order, month name, separators) follows the generic resource. The sender's
+  city is available to the model but **need not** appear when the local convention is date-only.
+
+## Layout & direction (known limitation)
+
+- The neutral template is **left-to-right (LTR)**. None of the 11 default interface languages
+  is RTL, so this is a non-issue for them. For an RTL target language reachable only via the
+  **"Other… (ISO code)"** option (Arabic, Hebrew, Persian, Urdu…), the spatial layout is **not
+  mirrored** — the *content* is still correct in the target language, only the block arrangement
+  stays LTR. This is a **documented limitation**, not a silent failure; mirroring is out of scope.
+
 ## Named slots the model fills (in the target language)
 
-`GREETING`, `SUBJECT`, the five body paragraphs (`§1`–`§5`), `CLOSING`.
+`GREETING`, `SUBJECT`, `DATE_LINE`, the five body paragraphs (`§1`–`§5`), `CLOSING`.
 
 Everything else is handled elsewhere: page layout and the signatory-name placement by the
 template; date rendering, number/percent formatting, and punctuation spacing by the generic
