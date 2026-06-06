@@ -236,7 +236,7 @@ def fill_template(
     """
     # Check that the template exists
     if not Path(template_path).exists():
-        print(f"❌ Template introuvable : {template_path}", file=sys.stderr)
+        print(f"❌ Template not found: {template_path}", file=sys.stderr)
         sys.exit(1)
 
     # Signature resolution: base64 argument takes priority, otherwise file
@@ -250,7 +250,7 @@ def fill_template(
             if content:
                 signature_base64 = content
         except Exception as e:
-            print(f"⚠️ Signature illisible, ignorée : {e}", file=sys.stderr)
+            print(f"⚠️ Signature unreadable, ignored: {e}", file=sys.stderr)
 
     # #1 — recruiter name: the model provides it (a real name, or a localized generic
     #      such as "Service Recrutement" / "Recruitment Department" / "Personalabteilung"
@@ -298,17 +298,17 @@ def fill_template(
             inserted = insert_signature(doc, signature_base64)
             if not inserted:
                 print(
-                    "⚠️ Placeholder {{SIGNATURE_IMAGE}} non trouvé dans le template",
+                    "⚠️ Placeholder {{SIGNATURE_IMAGE}} not found in the template",
                     file=sys.stderr,
                 )
         except Exception as e:
-            print(f"⚠️ Signature invalide, placeholder retiré : {e}", file=sys.stderr)
+            print(f"⚠️ Invalid signature, placeholder removed: {e}", file=sys.stderr)
             remove_signature_placeholder(doc)
     else:
         # No signature: cleanly remove the placeholder so it isn't displayed
         remove_signature_placeholder(doc)
         print(
-            "ℹ️ Aucune signature fournie : lettre générée sans image de signature.",
+            "ℹ️ No signature provided: letter generated without a signature image.",
             file=sys.stderr,
         )
 
@@ -316,7 +316,7 @@ def fill_template(
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
 
-    print(f"✅ Cover letter générée : {output_path}")
+    print(f"✅ Cover letter generated: {output_path}")
     return output_path
 
 
@@ -379,7 +379,7 @@ def main():
         "--body-cap",
         type=int,
         default=BODY_CAP_DEFAULT,
-        help=f"Plafond du corps en caractères (défaut {BODY_CAP_DEFAULT})",
+        help=f"Body cap in characters (default {BODY_CAP_DEFAULT})",
     )
 
     args = parser.parse_args()
@@ -388,7 +388,7 @@ def main():
     try:
         data = json.loads(args.data_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
 
     # Check the required fields
@@ -485,27 +485,27 @@ def main():
                 worst = length / target
                 prio = field
         print(
-            f"❌ Lettre trop longue : corps = {total} caractères (plafond {args.body_cap}). "
-            f"Elle déborderait sur une 2e page.",
+            f"❌ Letter too long: body = {total} characters (cap {args.body_cap}). "
+            f"It would overflow onto a 2nd page.",
             file=sys.stderr,
         )
         print(
-            "   Raccourcis le CONTENU (jamais les marges ni la police) puis régénère.",
+            "   Shorten the CONTENT (never the margins or font), then regenerate.",
             file=sys.stderr,
         )
-        print("   Tailles par paragraphe — cible = ratio × plafond :", file=sys.stderr)
+        print("   Per-paragraph sizes — target = ratio × cap:", file=sys.stderr)
         for field, length, target, _ in details:
-            mark = "  ⟵ à raccourcir en priorité" if field == prio else ""
-            print(f"     - {field}: {length} (cible ~{target}){mark}", file=sys.stderr)
+            mark = "  ⟵ shorten first" if field == prio else ""
+            print(f"     - {field}: {length} (target ~{target}){mark}", file=sys.stderr)
         sys.exit(2)
     over = [d for d in details if d[3]]
     if over:
         print(
-            "⚠️ Équilibrage (non bloquant) — paragraphe(s) très au-dessus de leur cible :",
+            "⚠️ Balancing (non-blocking) — paragraph(s) well above their target:",
             file=sys.stderr,
         )
         for field, length, target, _ in over:
-            print(f"     - {field}: {length} (cible ~{target})", file=sys.stderr)
+            print(f"     - {field}: {length} (target ~{target})", file=sys.stderr)
 
     fill_template(
         language=args.language,

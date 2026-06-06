@@ -291,7 +291,7 @@ def convert(input_path, output_path, title=None):
     """Converts the Markdown into a styled PDF."""
     input_path = Path(input_path)
     if not input_path.exists():
-        print(f"❌ Fichier introuvable : {input_path}", file=sys.stderr)
+        print(f"❌ File not found: {input_path}", file=sys.stderr)
         sys.exit(1)
 
     md_text = input_path.read_text(encoding="utf-8")
@@ -350,10 +350,10 @@ def convert(input_path, output_path, title=None):
     html_tmp.unlink(missing_ok=True)
 
     if result.returncode != 0:
-        print(f"❌ Erreur wkhtmltopdf : {result.stderr}", file=sys.stderr)
+        print(f"❌ wkhtmltopdf error: {result.stderr}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"✅ PDF généré : {output_path}")
+    print(f"✅ PDF generated: {output_path}")
 
 
 def main():

@@ -89,3 +89,36 @@ def test_build_all_produces_full_gallery(tmp_path):
     assert sum(n.endswith(".pdf") for n in names) == 6  # 2 letters + 4 generators
     assert sum(n.endswith(".md") for n in names) == 4
     assert sum(n.endswith(".html") for n in names) == 4
+
+
+# --- gallery exercises the 0.16.6 novelties -------------------------------- #
+
+
+def test_lorem_paragraphs_are_distinct():
+    """The five Lorem body paragraphs must be visibly different, not prefixes of
+    one another (0.16.6: per-paragraph offset in build_samples.lorem)."""
+    data = BS.lorem_letter_data(True)
+    paras = [
+        data[f]
+        for f in (
+            "paragraph_1_intro",
+            "paragraph_2_current",
+            "paragraph_3_experience",
+            "paragraph_4_value",
+            "paragraph_5_closing",
+        )
+    ]
+    assert len(set(paras)) == 5
+
+
+def test_sample_signature_is_visible():
+    """The fictional gallery signature must be a real, visible image — far larger
+    than the old 8x4 placeholder dot (0.16.6)."""
+    import base64
+    import struct
+
+    png = base64.b64decode(BS.signature_b64())
+    assert png.startswith(b"\x89PNG\r\n\x1a\n")
+    width, height = struct.unpack(">II", png[16:24])  # IHDR
+    assert width >= 100 and height >= 40
+    assert len(png) > 200

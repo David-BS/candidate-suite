@@ -35,7 +35,7 @@ If the request is open-ended ("help me apply", "prepare my application"), do not
 
 2. **To fill the template**: always use the script `scripts/fill_cover_letter.py`. NEVER generate the `.docx` by hand with ad-hoc python-docx.
 
-3. **Run language vs. recruiter/company extraction**: the **run language is already resolved by the orchestrator** (`SKILL.md`, STEP 4 *3-bis*) and passed in as `--language` — **this module does not detect language**. For recruiter/company extraction, always use the dedicated script; NEVER guess.
+3. **Run language vs. recruiter/company extraction**: the **run language is already resolved by the orchestrator** (`SKILL.md`, STEP 4 *3-bis*) and passed in as `--language` — **this module does not detect language**. For recruiter/company extraction, the model reads the posting directly (STEP 4) — no script, no regex; never invent unverified details.
 
 4. **For the paragraphs**: generate them **in the run language** (the value passed as `--language`). Follow the mandatory structure (see `references/paragraph_structure.md`).
 

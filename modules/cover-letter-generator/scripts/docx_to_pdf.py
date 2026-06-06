@@ -36,17 +36,16 @@ def find_soffice():
 def convert(input_path, output_path=None, outdir=None):
     inp = Path(input_path)
     if not inp.exists():
-        print(f"❌ Fichier introuvable : {inp}", file=sys.stderr)
+        print(f"❌ File not found: {inp}", file=sys.stderr)
         sys.exit(1)
 
     soffice = find_soffice()
     if not soffice:
         print(
-            "❌ LibreOffice introuvable : conversion .docx → PDF impossible "
-            "dans cet environnement.",
+            "❌ LibreOffice not found: cannot convert .docx → PDF in this environment.",
             file=sys.stderr,
         )
-        print("   → La lettre reste parfaitement utilisable en .docx.", file=sys.stderr)
+        print("   → The letter is still perfectly usable as .docx.", file=sys.stderr)
         sys.exit(3)
 
     target_dir = (
@@ -72,12 +71,12 @@ def convert(input_path, output_path=None, outdir=None):
         try:
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         except subprocess.TimeoutExpired:
-            print("❌ Conversion expirée (LibreOffice).", file=sys.stderr)
+            print("❌ Conversion timed out (LibreOffice).", file=sys.stderr)
             sys.exit(4)
 
     produced = target_dir / (inp.stem + ".pdf")
     if not produced.exists():
-        print("❌ Échec de la conversion .docx → PDF.", file=sys.stderr)
+        print("❌ Failed to convert .docx → PDF.", file=sys.stderr)
         if res.stdout.strip():
             print(res.stdout, file=sys.stderr)
         if res.stderr.strip():
@@ -88,7 +87,7 @@ def convert(input_path, output_path=None, outdir=None):
         shutil.move(str(produced), str(output_path))
         produced = Path(output_path)
 
-    print(f"✅ PDF généré : {produced}")
+    print(f"✅ PDF generated: {produced}")
     return produced
 
 

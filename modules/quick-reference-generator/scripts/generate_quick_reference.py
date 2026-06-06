@@ -91,7 +91,12 @@ def generate_quickref_md(labels, data):
     if data.get("key_stats"):
         parts.append(f"## {t['s_stats']} {{: .col2 }}\n")
         for stat in data["key_stats"]:
-            parts.append(f"- {stat}")
+            if isinstance(stat, dict):
+                fig = pick(stat, "stat", "figure", "value", "number", "kpi")
+                ctx = pick(stat, "context", "detail", "label", "description")
+                parts.append(f"- **{fig}** — {ctx}" if ctx else f"- {fig}")
+            else:
+                parts.append(f"- {stat}")
         parts.append("")
 
     # Top points
@@ -101,7 +106,7 @@ def generate_quickref_md(labels, data):
             point = pick(tp, "point", "title", "argument", "text")
             ev = pick(tp, "evidence", "proof", "context", "detail")
             if not point:
-                warnings.append(f"top_points[{i}] ignoré : champ 'point' vide")
+                warnings.append(f"top_points[{i}] ignored: empty 'point' field")
                 continue
             if ev:
                 rendered.append(f"{i}. **{point}** — {t['evidence']} : {ev}")
@@ -119,7 +124,7 @@ def generate_quickref_md(labels, data):
             q = pick(qa, "q", "question", "Q")
             a = pick(qa, "a", "answer", "A", "response")
             if not q and not a:
-                warnings.append(f"quick_qa[{i}] ignoré : question et réponse vides")
+                warnings.append(f"quick_qa[{i}] ignored: empty question and answer")
                 continue
             if q and a:
                 rendered.append(f"- **{q}** → {a}")
@@ -172,18 +177,18 @@ def main():
     try:
         data = json.loads(args.data_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
 
     try:
         labels = json.loads(args.labels_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide (labels) : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON (labels): {e}", file=sys.stderr)
         sys.exit(1)
     if not isinstance(labels, dict) or set(labels) != REQUIRED_LABELS:
         got = set(labels) if isinstance(labels, dict) else set()
         print(
-            f"❌ Libellés invalides — manquants: {sorted(REQUIRED_LABELS - got)} ; en trop: {sorted(got - REQUIRED_LABELS)}",
+            f"❌ Invalid labels — missing: {sorted(REQUIRED_LABELS - got)}; extra: {sorted(got - REQUIRED_LABELS)}",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -191,7 +196,7 @@ def main():
     required = ["candidate_name", "job_title", "company_name", "date"]
     missing = [f for f in required if f not in data]
     if missing:
-        print(f"❌ Champs obligatoires manquants : {missing}", file=sys.stderr)
+        print(f"❌ Missing required fields: {missing}", file=sys.stderr)
         sys.exit(1)
 
     # Completeness validation: a reference card that condenses the other docs
@@ -208,25 +213,27 @@ def main():
     has_pitch = bool(data.get("pitch_short"))
     # Criterion: pitch present AND at least 4 of 6 content sections
     if not has_pitch or len(filled) < 4:
-        print("❌ Fiche mémo incomplète — génération refusée.", file=sys.stderr)
+        print("❌ Incomplete reference card — generation refused.", file=sys.stderr)
         print(
-            f"   Sections remplies : {filled or 'aucune'} ({len(filled)}/6).",
+            f"   Filled sections: {filled or 'none'} ({len(filled)}/6).",
             file=sys.stderr,
         )
         print(
-            "   La fiche mémo CONDENSE les autres documents : elle doit contenir au minimum",
+            "   The reference card CONDENSES the other documents: it must contain at least",
             file=sys.stderr,
         )
         print(
-            "   le pitch (pitch_short) ET au moins 4 sections parmi : pitch_short, key_stats,",
+            "   the pitch (pitch_short) AND at least 4 sections among: pitch_short, key_stats,",
             file=sys.stderr,
         )
         print("   top_points, quick_qa, questions_to_ask, checklist.", file=sys.stderr)
         print(
-            "   → Reprends les points clés des documents déjà générés (playbook, synthèse,",
+            "   → Take the key points from the already-generated documents (playbook, summary,",
             file=sys.stderr,
         )
-        print("     aide entretien) et régénère avec un JSON complet.", file=sys.stderr)
+        print(
+            "     interview prep) and regenerate with a complete JSON.", file=sys.stderr
+        )
         sys.exit(2)
 
     md_content = generate_quickref_md(labels, data)
@@ -247,22 +254,18 @@ def main():
         ]
         if data.get(k)
     ]
-    print(f"✅ Quick Reference Card (Markdown) générée : {output_path}")
-    print(f"   - {len(sections)} sections : {', '.join(sections)}")
+    print(f"✅ Quick reference card (Markdown) generated: {output_path}")
+    print(f"   - {len(sections)} sections: {', '.join(sections)}")
 
     # Warn about ignored empty entries (avoids silent "**** →")
     if warnings:
-        print(
-            f"\n⚠️  {len(warnings)} entrée(s) ignorée(s) car vide(s) ou mal nommée(s) :"
-        )
+        print(f"\n⚠️  {len(warnings)} entry(ies) ignored (empty or misnamed):")
         for w in warnings:
             print(f"   - {w}")
-        print(
-            "   → Vérifie le JSON : les clés attendues sont 'point'/'evidence' (top_points)"
-        )
-        print("     et 'q'/'a' (quick_qa). Régénère avec les champs remplis.")
+        print("   → Check the JSON: expected keys are 'point'/'evidence' (top_points)")
+        print("     and 'q'/'a' (quick_qa). Regenerate with the fields filled.")
 
-    print("\n💡 Pour exporter en PDF :")
+    print("\n💡 To export to PDF:")
     print(
         f"   python md_to_pdf.py --input {output_path} --output {output_path.with_suffix('.pdf')}"
     )
