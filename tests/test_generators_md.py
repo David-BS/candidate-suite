@@ -140,4 +140,4 @@ def test_quickref_key_stats_accepts_dicts_and_strings():
     text = md if isinstance(md, str) else "\n".join(md)
     assert "- **2B+ tx/year** — payment platforms" in text  # dict → figure + context
     assert "- 99%+ SLA" in text  # plain string still supported
-    assert "{'stat'" not in text and "{\"stat\"" not in text  # never a raw dict dump
+    assert "{'stat'" not in text and '{"stat"' not in text  # never a raw dict dump

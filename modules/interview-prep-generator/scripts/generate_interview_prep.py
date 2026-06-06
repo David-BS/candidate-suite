@@ -221,9 +221,7 @@ def main():
 
     print(f"✅ Interview prep (Markdown) generated: {output_path}")
     print(f"   - {len(data.get('screening_questions', []))} screening questions")
-    print(
-        f"   - {len(data.get('competence_questions', []))} competence questions"
-    )
+    print(f"   - {len(data.get('competence_questions', []))} competence questions")
     print("\n💡 To export to PDF:")
     print(
         f"   python md_to_pdf.py --input {output_path} --output {output_path.with_suffix('.pdf')}"

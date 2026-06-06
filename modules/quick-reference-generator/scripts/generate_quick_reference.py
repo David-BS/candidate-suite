@@ -231,7 +231,9 @@ def main():
             "   → Take the key points from the already-generated documents (playbook, summary,",
             file=sys.stderr,
         )
-        print("     interview prep) and regenerate with a complete JSON.", file=sys.stderr)
+        print(
+            "     interview prep) and regenerate with a complete JSON.", file=sys.stderr
+        )
         sys.exit(2)
 
     md_content = generate_quickref_md(labels, data)
@@ -257,14 +259,10 @@ def main():
 
     # Warn about ignored empty entries (avoids silent "**** →")
     if warnings:
-        print(
-            f"\n⚠️  {len(warnings)} entry(ies) ignored (empty or misnamed):"
-        )
+        print(f"\n⚠️  {len(warnings)} entry(ies) ignored (empty or misnamed):")
         for w in warnings:
             print(f"   - {w}")
-        print(
-            "   → Check the JSON: expected keys are 'point'/'evidence' (top_points)"
-        )
+        print("   → Check the JSON: expected keys are 'point'/'evidence' (top_points)")
         print("     and 'q'/'a' (quick_qa). Regenerate with the fields filled.")
 
     print("\n💡 To export to PDF:")

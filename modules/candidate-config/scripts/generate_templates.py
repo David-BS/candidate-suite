@@ -316,9 +316,7 @@ def main():
             "  - 3 lines: name / full address / digital contacts (email | linkedin | phone)"
         )
     else:
-        print(
-            "  - 6 lines: name / street / postcode+city / email / linkedin / phone"
-        )
+        print("  - 6 lines: name / street / postcode+city / email / linkedin / phone")
 
     print("\n📋 Supported placeholders:")
     placeholders = [

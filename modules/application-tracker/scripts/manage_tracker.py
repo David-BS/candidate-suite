@@ -575,9 +575,7 @@ def cmd_batch_status(args):
     merged, applied = apply_status_changes(existing, changes)
     out = resolve_output_path(args)
     write_output(out, render_csv(merged))
-    print(
-        f"✅ {applied} status change(s) applied. Total: {len(merged)} row(s)."
-    )
+    print(f"✅ {applied} status change(s) applied. Total: {len(merged)} row(s).")
     print(f"   {out}")
 
 

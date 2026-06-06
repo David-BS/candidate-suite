@@ -122,7 +122,7 @@ def signature_b64():
                     px, py = x + dx, y + dy
                     if 0 <= px < W and 0 <= py < H:
                         o = (py * W + px) * 4
-                        buf[o:o + 4] = INK
+                        buf[o : o + 4] = INK
 
     def qbezier(p0, p1, p2, r=2, steps=90):
         for s in range(steps + 1):
@@ -152,7 +152,7 @@ def signature_b64():
     raw = bytearray()
     for y in range(H):
         raw.append(0)  # filter type 0 (None)
-        raw.extend(buf[y * W * 4:(y + 1) * W * 4])
+        raw.extend(buf[y * W * 4 : (y + 1) * W * 4])
     png = (
         b"\x89PNG\r\n\x1a\n"
         + _chunk(b"IHDR", struct.pack(">IIBBBBB", W, H, 8, 6, 0, 0, 0))
@@ -403,7 +403,10 @@ _GENERATORS = {
             _BASE,
             pitch_short="20 years in banking IT; led payment platforms at 2B+ tx/year, 99%+ SLA.",
             key_stats=[
-                {"stat": "2B+ transactions/year", "context": "European payment platforms"},
+                {
+                    "stat": "2B+ transactions/year",
+                    "context": "European payment platforms",
+                },
                 {"stat": "99%+ SLA", "context": "critical flows"},
                 {"stat": "80% incident reduction", "context": "in one year"},
                 {"stat": "150-person org", "context": "current Agile tribe"},

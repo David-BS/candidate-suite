@@ -42,8 +42,7 @@ def convert(input_path, output_path=None, outdir=None):
     soffice = find_soffice()
     if not soffice:
         print(
-            "❌ LibreOffice not found: cannot convert .docx → PDF "
-            "in this environment.",
+            "❌ LibreOffice not found: cannot convert .docx → PDF in this environment.",
             file=sys.stderr,
         )
         print("   → The letter is still perfectly usable as .docx.", file=sys.stderr)
