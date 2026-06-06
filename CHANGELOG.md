@@ -10,6 +10,20 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
+## [0.20.0] — 2026-06-06
+
+### Added
+- **Posting brief (PB-1) — new `posting-brief-generator` sub-module.** At application intake, the orchestrator now produces a Markdown **posting brief** (job-posting dossier) automatically and **first**, before the widget's six deliverables — it is **not** a selection-widget choice. Content: a header (company, position, recruiter, city, capture date, source URL, posting language), the **verbatim** posting body, and a short model-extracted **digest** (key requirements + application deadline). It reuses the offer already read in the single global analysis, so it adds no separate offer read and nothing to the time-to-widget. Generated via `generate_posting_brief.py`; optional styled PDF via the module's `md_to_pdf.py` (also part of the end-of-run PDF batch). Eighth sub-module of the suite.
+- **Script-owned filename** for the brief: `generate_posting_brief.py --output-dir <dir>` builds `Posting_Brief_<Company>_<Position>_<YYYYMMDD>.md` and prints the path (read it to present the file). `--output-path` is accepted as a fallback (gallery / back-compat). The **capture date** is stamped by the script (today's local date; `--timezone` resolved by the model with a safe `Europe/Paris` fallback — same model=zone / script=clock boundary as the tracker), never model-supplied.
+- **Tracker id `posting_brief`** recorded in the `deliverables` column at `add_to_tracker`.
+
+### Changed
+- **Surface contract (LNG-2):** the brief's section/field labels are model-supplied in the run language via `--labels-json` (exact 13-key set; missing/extra rejected). Structure, `print` output and the verbatim body stay script-owned. Critical fields (`company_name`, `job_title`, `posting_body`) are guarded by the neutral `__MISSING__` sentinel → exit 2 (the model asks, never invents), the same contract as `fill_cover_letter`.
+- **Orchestration (`SKILL.md`):** STEP 4 generates the brief first (idempotent — skipped if a `Posting_Brief_*` already exists for the application, STEP 2; regenerated only on an explicit request); STEP 7 includes it in the PDF batch; module map and the sub-module count (7 → 8) updated. `references/assistant_flow.md` documents the out-of-widget `posting_brief` id.
+
+### Tests
+- **`tests/test_posting_brief.py`** (new): ISO-639-1 form accept/reject, exact label-set (missing/extra) rejection, required-field and `__MISSING__`/empty critical-field rejection (exit 2), the **script-owned filename + printed-path** invariant, the `--output-path` fallback, and `resolve_timezone` valid/fallback. The brief is also added to the acceptance gallery (`tooling/build_samples.py`).
+
 ## [0.19.0] — 2026-06-06
 
 ### Changed

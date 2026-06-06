@@ -236,6 +236,50 @@ _BASE = {
 }
 
 _GENERATORS = {
+    "00_posting_brief": {
+        "module": "posting-brief-generator",
+        "labels": {
+            "title": "Job Posting Brief",
+            "s_meta": "At a glance",
+            "l_company": "Company",
+            "l_position": "Position",
+            "l_recruiter": "Recruiter",
+            "l_city": "City",
+            "l_captured": "Captured",
+            "l_source": "Source",
+            "l_language": "Language",
+            "s_digest": "Digest",
+            "sub_requirements": "Key requirements",
+            "sub_deadline": "Application deadline",
+            "s_posting": "Job posting",
+        },
+        "data": {
+            "company_name": "Acme Financial Group",
+            "job_title": "Head of Engineering",
+            "posting_language": "English",
+            "recruiter_name": "Jane Smith",
+            "recruiter_title": "Head of Talent",
+            "city": "Paris",
+            "source_url": "https://careers.example.com/head-of-engineering",
+            "requirements": [
+                "10+ years leading engineering organizations at scale",
+                "Proven payments / fintech platform modernization",
+                "Fluent French and English",
+            ],
+            "deadline": "30 June 2026",
+            "posting_body": (
+                "Acme Financial Group is hiring a Head of Engineering to lead the "
+                "modernization of its European payments platform.\n\n"
+                "You will own the platform roadmap, lead ~150 engineers across "
+                "product squads, and partner with Product and Risk to deliver "
+                "reliable, scalable payment flows.\n\n"
+                "Requirements: 10+ years leading engineering organizations at "
+                "scale; a track record of payments or fintech platform "
+                "modernization; fluency in French and English.\n\n"
+                "Location: Paris. Applications close on 30 June 2026."
+            ),
+        },
+    },
     "03_application_summary": {
         "module": "application-summary-generator",
         "labels": {

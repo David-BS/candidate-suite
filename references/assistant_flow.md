@@ -37,6 +37,12 @@ Open-ended request
 | quick_reference | quick-reference-generator | condenses the others → second to last |
 | add_to_tracker | application-tracker | always last |
 
+> **Out-of-widget id — `posting_brief`.** The posting brief (`posting-brief-generator`) is
+> produced **automatically at intake**, not through the widget and not as a slot in the order
+> above: the orchestrator generates it **first** (before `strategic_playbook`), from the offer
+> already read in the single global analysis. Its id `posting_brief` is recorded in the tracker
+> `deliverables` like any other deliverable. See SKILL STEP 4 and the module `GUIDE.md`.
+
 ## Enforced generation order
 
 `strategic_playbook → application_summary → interview_prep → cover_letter →

@@ -84,10 +84,10 @@ def test_unsigned_lorem_letter_has_no_signature(tmp_path):
 @pytest.mark.needs_libreoffice
 def test_build_all_produces_full_gallery(tmp_path):
     names = {p.name for p in BS.build_all(tmp_path)}
-    assert len(names) == 16
+    assert len(names) == 18
     assert sum(n.endswith(".docx") for n in names) == 2  # signed + unsigned
-    assert sum(n.endswith(".pdf") for n in names) == 6  # 2 letters + 4 generators
-    assert sum(n.endswith(".md") for n in names) == 4
+    assert sum(n.endswith(".pdf") for n in names) == 7  # 2 letters + 5 generators
+    assert sum(n.endswith(".md") for n in names) == 5  # posting brief + 4 others
     assert sum(n.endswith(".html") for n in names) == 4
 
 

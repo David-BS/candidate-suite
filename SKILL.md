@@ -1,15 +1,15 @@
 ---
 name: candidate-suite
-version: 0.19.0
+version: 0.20.0
 updated: 2026-06-06
 description: "All-in-one suite for preparing job applications and interviews, bundled as a single module: cover letter, interview prep, application summary, strategic playbook, one-page reference card, and application tracking, plus candidate-profile configuration. Single entry point: it shows a selection widget, then generates each deliverable through its sub-module's script. Use whenever the user wants to apply for a role, prepare an application or an interview, get tools for a job posting, configure the skill or update their CV or profile, generate a cover letter, produce a summary, playbook, or reference card, track applications or view their application dashboard (e.g. asking where their applications stand), or makes any open-ended request for job-application help. These are intents, not required wordings: match the user's intent regardless of the language the request is written in."
 ---
 
 # candidate-suite
 
-`Version 0.16.6 — 2026-06-05`
+`Version 0.20.0 — 2026-06-06`
 
-**candidate-suite** is an **all-in-one** suite: a single module to install that bundles the orchestrator (this root) and 7 specialized sub-modules. Faced with a job-application request, this skill shows a **selection widget** that turns the vague request into an explicit command, then generates each deliverable through the relevant sub-module's script. **Nothing is written by hand.**
+**candidate-suite** is an **all-in-one** suite: a single module to install that bundles the orchestrator (this root) and 8 specialized sub-modules. Faced with a job-application request, this skill shows a **selection widget** that turns the vague request into an explicit command, then generates each deliverable through the relevant sub-module's script. **Nothing is written by hand.**
 
 ## 🗺️ Suite architecture — path convention (READ FIRST)
 
@@ -28,6 +28,7 @@ The modules' Python code is unchanged: each script receives all its paths as arg
 | Deliverable / need | Module | Main script |
 |---|---|---|
 | Profile / CV / signature / templates config | `modules/candidate-config` | `setup_workflow.py`, `setup_signature.py`, `generate_templates.py` |
+| Posting brief (auto at intake) | `modules/posting-brief-generator` | `generate_posting_brief.py` (+ `md_to_pdf.py`) |
 | Strategic playbook | `modules/strategic-playbook-generator` | `generate_playbook.py` (+ `md_to_pdf.py`) |
 | Application summary | `modules/application-summary-generator` | `generate_application_summary.py` (+ `md_to_pdf.py`) |
 | Interview prep | `modules/interview-prep-generator` | `generate_interview_prep.py` (+ `md_to_pdf.py`) |
@@ -70,7 +71,7 @@ How a chosen language is *realized* (register, idiom, dates, numbers, spacing, l
 5. **Gather the relevant memory items** for the widget block (if memory is active): name/profile, CV, address, ongoing applications, preferences. Each item has `id`, `label`, `value`. Present as "non-exhaustive," never as an audit.
 
 ### STEP 2 — Already-produced deliverables
-Look in `/mnt/user-data/outputs/` for already-generated deliverables (`Strategic_Playbook_*`, `Application_Summary_*`, `Interview_Prep_*`, `Cover_Letter_*`, `Quick_Reference_*`) to pre-check / grey out the boxes.
+Look in `/mnt/user-data/outputs/` for already-generated deliverables (`Strategic_Playbook_*`, `Application_Summary_*`, `Interview_Prep_*`, `Cover_Letter_*`, `Quick_Reference_*`) to pre-check / grey out the boxes. Also note any `Posting_Brief_*` for this application: it is **not** a widget box, but its presence makes the auto-intake brief (STEP 4) idempotent — don't regenerate it.
 
 ### STEP 3 — Show the widget
 ```bash
@@ -102,7 +103,8 @@ Input arrives one of two **equivalent** ways: (a) the **Generate click** — the
    - **Circulate the value:** pass it as `--language <code>` to each script below (letter = confirmed **offer** language; help-docs = **working** language, or the override). any ISO 639-1 code works (**L6**): there are no per-language assets anymore — the scripts are language-agnostic and the model supplies the labels/strings in the run language.
    - **Beyond `--language` (labels contract — L6):** each deliverable's **structure labels** are produced **by the model in the run language** and passed to its script — `--labels-json '{...}'` for the four `.md` generators (the script enforces the **exact** key set — no invented/omitted section), and `subject_label` / `greeting` / `closing` in the letter's `--data-json`. See each module `GUIDE.md` + `references/language_style_generic.md`.
    - **Persist (letter only, opportunistic):** when the letter language was confirmed and the application is (or is being) added to the tracker, write it to the tracker `language` column for silent reuse on resume. Letter-only without a tracker → persist nothing. Help-doc language is **never** persisted.
-4. **Generate each chosen deliverable**, in the mandatory order below, **through the module's script** (never by hand). Read the module's `GUIDE.md` for the details, and prefix its paths with `modules/<name>/`:
+4. **First, automatically generate the posting brief** (PB-1) — it is **not** a widget choice — then **generate each chosen deliverable**, in the mandatory order below, **through the module's script** (never by hand). Read the module's `GUIDE.md` for the details, and prefix its paths with `modules/<name>/`:
+   - `posting_brief` → `modules/posting-brief-generator` (**automatic, first, not a widget box**) — produced from a job posting at intake, **reusing the offer already read in the single global analysis** (sub-step 3), so it adds no separate offer read and nothing to the time-to-widget. Header + **verbatim** body + model-extracted digest (key requirements / deadline). The capture date and the **filename are script-owned** (`--output-dir`, read the printed path; never hand-compose `--output-path`). **Idempotent**: skip if a `Posting_Brief_<company>_<position>_*` already exists in outputs (STEP 2); regenerate only on an explicit request. Present it via `present_files`, and record its id `posting_brief` in the tracker `deliverables` (at `add_to_tracker`). Trigger = the presence of a job posting (the same trigger as the STEP 8 title); pure config actions produce no brief. Details: its `GUIDE.md`.
    - `strategic_playbook` → `modules/strategic-playbook-generator`
    - `application_summary` → `modules/application-summary-generator`
    - `interview_prep` → `modules/interview-prep-generator`
@@ -112,7 +114,7 @@ Input arrives one of two **equivalent** ways: (a) the **Generate click** — the
 5. Respect the dependencies (reference card after the documents it condenses).
 6. No intermediate validation between deliverables.
 7. Offer PDF export at the end, then, if the user agrees, generate the PDFs of **all** produced deliverables:
-   - `.md` deliverables (playbook, summary, interview prep, reference card) → the relevant module's `md_to_pdf.py`;
+   - `.md` deliverables (posting brief, playbook, summary, interview prep, reference card) → the relevant module's `md_to_pdf.py`;
    - **cover letter `.docx`** (#7) → `python modules/cover-letter-generator/scripts/docx_to_pdf.py --input <letter.docx> --output <letter.pdf>` (LibreOffice; if unavailable the script exits with code 3 and the letter stays usable as `.docx`). Don't forget the letter in the PDF batch.
 8. **Suggest the canonical conversation title** `📋 YYYY-MM-DD - Company - Position`, **systematically as soon as a deliverable is generated from a job description** — whatever the flow: full guided flow **OR** creation of a single specific document. The trigger is the **presence of a job description** (so not pure configuration actions: profile, signature, which are tied to no posting). **Title date = date of first activity if the application is already tracked, otherwise today's date** (candidate's local date — same locale resolution as the tracker timestamp) → a **time-stable title** (resuming on another day suggests the same title). It is a **suggestion for the user to apply**: the assistant **cannot rename** the conversation itself. This marker makes it findable in the **sidebar** (on desktop, conversation links aren't clickable). If the conversation already has this name, the suggestion lands correctly — zero cost.
 
