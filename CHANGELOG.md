@@ -10,6 +10,13 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
+## [1.0.0] — 2026-06-06
+
+First stable release. **Functionally identical to [0.20.0]** — no behavioural change. The version bump marks the feature surface as complete and stable for public diffusion.
+
+### Documentation
+- **Scope statement added (README).** candidate-suite is explicitly scoped to the **Anthropic Claude ecosystem**: it runs inside the Claude app and relies on the Claude skills runtime (sandboxed code execution that runs its bundled scripts, the in-chat selection widget, in-app file delivery). The `SKILL.md` packaging format is becoming a cross-vendor standard, so the manifest is portable — but this skill's engine is **script-driven** (its scripts are the source of truth and produce every deliverable), so running it requires a host that executes those scripts and renders the widget. Today that means the Claude ecosystem only; it is not compatible with other AI assistants.
+
 ## [0.20.0] — 2026-06-06
 
 ### Added
