@@ -334,43 +334,47 @@ def build_html(entries, statuses, readonly, surface, ui_lang, labels):
   function renderConv(c, company, position, realTitle){
     if(!c) return "";
     var parts = String(c).split(";").map(function(x){ return x.trim(); }).filter(Boolean);
-    return parts.map(function(p){
-      var arrow = p.indexOf("\u2192"); // →
-      var deleted = /\u2717/.test(p);
-      var here = /\u25C6/.test(p);
-      var rawLabel = (arrow > -1 ? p.slice(0, arrow) : p)
-                       .replace(/\u2717/g, "")
-                       .replace(/\u25C6/g, "")
-                       .trim();
+    var rt = (realTitle && realTitle.trim()) ? realTitle.trim() : "";
+    var items = parts.map(function(p){
+      var arrow = p.indexOf("\u2192");
       var token = (arrow > -1) ? p.slice(arrow + 1).trim() : "";
-      var url = convUrl(token) || (/^https?:\/\//i.test(p) ? p.trim() : "");
+      var rawLabel = (arrow > -1 ? p.slice(0, arrow) : p)
+                       .replace(/\u2717/g, "").replace(/\u25C6/g, "").trim();
       var dm = rawLabel.match(/(\d{4})-(\d{2})-(\d{2})/);
-      var dateShort = dm ? (dm[2] + "-" + dm[3]) : (rawLabel || L.conv_link_fallback);
-      var fullDate = dm ? dm[0] : rawLabel;
-      // Marker to find/copy in the sidebar: real title if captured,
-      // otherwise the fabricated marker `📋 date - company - position`.
-      var fabricated = "\ud83d\udccb " + fullDate +
-                       (company ? " - " + company : "") +
-                       (position ? " - " + position : "");
-      var marker = (realTitle && realTitle.trim()) ? realTitle.trim() : fabricated;
-
-      // 1) Deleted conversation: URL invalidated → grey italic, not clickable
-      if (deleted){
-        return '<span title="'+esc(L.conv_deleted_title)+'" style="color:var(--color-text-tertiary); font-style:italic; white-space:nowrap;">'+esc(dateShort)+'</span>';
+      return {
+        deleted: /\u2717/.test(p),
+        here: /\u25C6/.test(p),
+        url: convUrl(token) || (/^https?:\/\//i.test(p) ? p.trim() : ""),
+        dateShort: dm ? (dm[2] + "-" + dm[3]) : (rawLabel || L.conv_link_fallback),
+        fullDate: dm ? dm[0] : rawLabel,
+        sortKey: dm ? dm[0] : ""
+      };
+    });
+    // Most-recent first: the latest conversation leads (the order users scan).
+    items.sort(function(a, b){ return a.sortKey < b.sortKey ? 1 : (a.sortKey > b.sortKey ? -1 : 0); });
+    // The single captured title (realTitle) belongs to the most-recent LINKED
+    // conversation only — there is no per-conversation title in the data model yet.
+    var titleIdx = -1;
+    for (var i = 0; i < items.length; i++){ if (items[i].url){ titleIdx = i; break; } }
+    return items.map(function(it, idx){
+      // 1) Deleted -> crossed glyph, grey italic, not clickable.
+      if (it.deleted){
+        return '<span title="'+esc(it.fullDate + " \u2014 " + L.conv_deleted_title)+'" style="color:var(--color-text-tertiary); font-style:italic;">\u2717</span>';
       }
-      // 2) Existing conversation (known link)
-      if (url){
-        // Desktop: a link would open the browser → we show the exact marker to
-        // find/copy in the sidebar (selectable with one click).
+      // 2) Linked -> web: clickable open-glyph; desktop: selectable marker to find in the sidebar.
+      if (it.url){
         if (IS_DESKTOP){
+          var fabricated = "\ud83d\udccb " + it.fullDate + (company ? " - " + company : "") + (position ? " - " + position : "");
+          var marker = rt ? rt : fabricated;
           return '<span title="'+esc(L.conv_desktop_title)+'" style="color:var(--color-text-secondary); user-select:all; -webkit-user-select:all; cursor:text;">'+esc(marker)+'</span>';
         }
-        // Web: clickable link (new tab, same account).
-        return '<a href="'+esc(url)+'" target="_blank" rel="noopener" title="'+esc(rawLabel||url)+'" style="color:var(--color-text-info); white-space:nowrap; text-decoration:none;">'+esc(dateShort)+'</a>';
+        var tip = it.fullDate + ((idx === titleIdx && rt) ? "  \u00b7  " + rt : "");
+        return '<a href="'+esc(it.url)+'" target="_blank" rel="noopener" title="'+esc(tip)+'" style="color:var(--color-text-info); text-decoration:none;">\u2197</a>';
       }
-      // 3) Current conversation / not yet linked → grey, ◆ suffix
-      var title3 = here ? L.conv_current_title : L.conv_unlinked_title;
-      return '<span title="'+esc(title3)+'" style="color:var(--color-text-tertiary); white-space:nowrap;">'+esc(dateShort + (here ? "\u2009\u25C6" : ""))+'</span>';
+      // 3) Current (diamond) / pending -> grey, not clickable.
+      var title3 = it.here ? L.conv_current_title : L.conv_unlinked_title;
+      var glyph3 = it.here ? "\u25C6" : esc(it.dateShort);
+      return '<span title="'+esc(it.fullDate + " \u2014 " + title3)+'" style="color:var(--color-text-tertiary);">'+glyph3+'</span>';
     }).join(' <span style="color:var(--color-text-tertiary);">\u00b7</span> ');
   }
 
@@ -408,16 +412,14 @@ def build_html(entries, statuses, readonly, surface, ui_lang, labels):
   // ---- Link-column legend (surface-aware) ----
   function buildLegend(){
     document.getElementById("legLinkColumn").textContent = L.legend_link_column;
-    var legLink = document.getElementById("legLink");
-    legLink.innerHTML = IS_DESKTOP
+    document.getElementById("legLink").innerHTML = IS_DESKTOP
       ? '<span style="color: var(--color-text-secondary);">\ud83d\udccb '+esc(L.legend_desktop_example)+'</span>\u2003'+esc(L.legend_desktop_text)
-      : '<span style="color: var(--color-text-info);">05-28</span>\u2003'+esc(L.legend_web_clickable);
+      : '<span style="color: var(--color-text-info);">\u2197</span>\u2003'+esc(L.legend_web_clickable);
     document.getElementById("legCurrent").innerHTML =
-      '<span style="color: var(--color-text-tertiary);">05-29\u2009\u25C6</span>\u2003'+esc(L.legend_current);
-    document.getElementById("legLinked").innerHTML =
-      '<span style="color: var(--color-text-info);">05-29</span>\u2003'+esc(L.legend_linked);
+      '<span style="color: var(--color-text-tertiary);">\u25C6</span>\u2003'+esc(L.legend_current);
+    document.getElementById("legLinked").innerHTML = "";
     document.getElementById("legDeleted").innerHTML =
-      '<span style="color: var(--color-text-tertiary); font-style:italic;">05-30\u2009\u2717</span>\u2003'+esc(L.legend_deleted);
+      '<span style="color: var(--color-text-tertiary); font-style:italic;">\u2717</span>\u2003'+esc(L.legend_deleted);
   }
 
   // ---- Filters: populating the selects ----

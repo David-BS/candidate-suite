@@ -10,7 +10,18 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
-## [0.18.0] — 2026-06-06
+## [0.19.0] — 2026-06-06
+
+### Changed
+- **DRV-7 (option A) — dashboard conversation column redesigned (web).** Each conversation now renders as a compact glyph instead of a date label: `↗` linked (clickable, opens the conversation), `◆` current conversation (non-clickable — no self-link possible), `✗` deleted (non-clickable, greyed). Each linked conversation is individually clickable (already the engine behaviour; only the visual token changed). Conversations are ordered **most-recent-first**. Web tooltip = the full date, plus the single captured title (`realTitle`) attached to the **most-recent linked** conversation only — there is no per-conversation title in the data model yet, so older conversations show date-only rather than a misattributed title. Legend updated to the three glyphs (existing label keys reused — no label-contract change). `isRowDeleted()` (whole-row greying) is unaffected: it keys off marker state, not rendering.
+- **Desktop rendering kept as-is** (full selectable marker to find/copy in the sidebar): a clickable glyph would open the browser, and the no-link constraint there is unchanged. The most-recent-first ordering applies to both surfaces.
+- **Glyphs are Unicode** (`↗ ◆ ✗`), recolourable and surface-safe — the dashboard has no icon webfont (it already uses `◆/✗/📋/↻`). Robustness floor: no dependency on an unguaranteed font.
+
+### Notes
+- Per-conversation title/deliverable mapping (so the tooltip could show *which* deliverable lives in *which* conversation) requires extending the data model (a title per conversation marker, captured at reconcile). Tracked as a separate item; out of scope here. Once it lands, these same glyphs gain real per-conversation titles for free.
+- Behavioural verification: renderConv exercised under Node (11 assertions — states, ordering, title attribution, non-clickable ◆/✗, desktop unchanged). CI guard (`tests/test_build_dashboard.py`) asserts the glyph/ordering wiring in the generated HTML, since the harness has no JS engine.
+
+
 
 ### Changed
 - **Cover-letter template de-French-ified (minimal pass).** The place-and-date line was a hardcoded `{{SENDER_CITY}}, {{DATE_LETTER}}` composite — a continental/French tic (mandatory city + comma) baked into the layout. It is now a **single `{{DATE_LINE}}` slot the model composes in the target locale's convention** (e.g. `Paris, le 6 juin 2026`, `New York, June 6, 2026`, or a date-only line where the locale omits the city). The date was already model-supplied, so this only merges two values into one model-composed line — no script-owned formatting handed over. `sender_city` stays a slot for the sender address block. Body alignment (justify) left as-is: acceptable for the majority of the 11 default languages, and changing it would swap one bias for another. Regenerated `assets/Cover_letter_template.docx` accordingly.
