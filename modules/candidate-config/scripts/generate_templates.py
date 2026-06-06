@@ -192,7 +192,7 @@ def add_common_body(doc):
     run_company.font.size = Pt(11)
     run_company.font.bold = True
 
-    run_location = p_recipient.add_run("{{SENDER_CITY}}, {{DATE_LETTER}}")
+    run_location = p_recipient.add_run("{{DATE_LINE}}")
     run_location.font.name = "Calibri"
     run_location.font.size = Pt(11)
     run_location.font.bold = False
@@ -330,7 +330,7 @@ def main():
         "{{RECRUITER_NAME}}",
         "{{RECRUITER_TITLE}}",
         "{{COMPANY_NAME}}",
-        "{{DATE_LETTER}}",
+        "{{DATE_LINE}}",
         "{{JOB_TITLE}}",
         "{{SUBJECT_LABEL}}",
         "{{GREETING}}",

@@ -7,7 +7,9 @@ generated .docx preserves the Calibri font, the fused-border header (no Word
 table) and a floating (anchored) signature.
 """
 
+import io
 import json
+import re
 import zipfile
 
 import pytest
@@ -15,6 +17,7 @@ import pytest
 from _helpers import REPO_ROOT, load_module, run_cli
 
 CL_REL = "modules/cover-letter-generator/scripts/fill_cover_letter.py"
+GT_REL = "modules/candidate-config/scripts/generate_templates.py"
 TEMPLATE = (
     REPO_ROOT / "modules/cover-letter-generator/assets/Cover_letter_template.docx"
 )
@@ -57,6 +60,36 @@ def test_build_replacements_maps_keys_including_legacy_name():
     assert repl["{{SENDER_NAME}}"] == "X"
     assert repl["{{PARAGRAPH_4_ACHIEVEMENTS}}"] == "V"  # legacy placeholder name
     assert cl.build_replacements({"company_name": None})["{{COMPANY_NAME}}"] == ""
+
+
+def test_date_line_is_a_single_model_filled_slot():
+    # 0.18.0 — de-French-ification: the place-and-date line is one slot the model
+    # composes per locale, not a hardcoded "{{SENDER_CITY}}, {{DATE_LETTER}}" composite.
+    cl = load_module(CL_REL)
+    repl = cl.build_replacements({"date_line": "New York, June 6, 2026"})
+    assert repl["{{DATE_LINE}}"] == "New York, June 6, 2026"
+    assert "{{DATE_LETTER}}" not in repl  # old continental composite is gone
+
+
+@pytest.mark.needs_docx
+def test_generated_template_placeholders_match_fill_map():
+    # Drift guard (the gap a generator-only rename would slip through): the set of
+    # {{...}} placeholders the template GENERATOR emits must equal the set
+    # fill_cover_letter knows how to replace — except {{SIGNATURE_IMAGE}}, inserted
+    # as a floating image, not via build_replacements.
+    gt = load_module(GT_REL)
+    cl = load_module(CL_REL)
+    buf = io.BytesIO()
+    gt.create_template(style="hybrid").save(buf)
+    gen = set(
+        re.findall(
+            r"\{\{[A-Z_0-9]+\}\}",
+            zipfile.ZipFile(buf).read("word/document.xml").decode(),
+        )
+    )
+    fill = set(cl.build_replacements({}).keys())
+    assert "{{DATE_LINE}}" in gen and "{{DATE_LETTER}}" not in gen  # 0.18.0 rename
+    assert gen - {"{{SIGNATURE_IMAGE}}"} == fill  # no orphan placeholder either way
 
 
 @pytest.mark.needs_docx
@@ -106,6 +139,15 @@ def test_blank_critical_field_is_refused(tmp_path):
 def test_missing_required_field_exits_1(tmp_path):
     d = _data()
     del d["company_name"]
+    proc, _ = _run(tmp_path, d)
+    assert proc.returncode == 1
+
+
+@pytest.mark.needs_docx
+def test_missing_date_line_is_required(tmp_path):
+    # 0.18.0: date_line replaced date_letter in the required-fields list.
+    d = _data()
+    del d["date_line"]
     proc, _ = _run(tmp_path, d)
     assert proc.returncode == 1
 

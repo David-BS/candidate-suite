@@ -266,7 +266,8 @@ If the signature is unavailable, the script handles the absence (placeholder ign
 
 The `--data-json` must contain:
 - All candidate data (sender_name, sender_street, etc.)
-- Recipient data (recruiter_name, recruiter_title, company_name, sender_city, date_letter)
+- Recipient data (recruiter_name, recruiter_title, company_name)
+- **`date_line`** — the place-and-date line, **composed by the model in the target locale's convention** (e.g. `Paris, le 6 juin 2026` / `New York, June 6, 2026` / date-only `6 June 2026` where the locale omits the city); date formatting per `references/language_style_generic.md`. `sender_city` is still supplied for the **sender address block**.
 - Job title (job_title)
 - **Localized letter strings, produced by the model in the run language** — `subject_label` (objet label incl. its separator + trailing space, e.g. `Poste : ` / `Position: ` / `Betreff: `), `greeting` (salutation), `closing` (e.g. `Cordialement,` / `Sincerely,` / `Mit freundlichen Grüßen,`); see `references/letter_conventions.md`
 - The 5 paragraphs (paragraph_1_intro, paragraph_2_current, paragraph_3_experience, paragraph_4_value, paragraph_5_closing)

@@ -10,7 +10,16 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
-## [0.17.0] — 2026-06-06
+## [0.18.0] — 2026-06-06
+
+### Changed
+- **Cover-letter template de-French-ified (minimal pass).** The place-and-date line was a hardcoded `{{SENDER_CITY}}, {{DATE_LETTER}}` composite — a continental/French tic (mandatory city + comma) baked into the layout. It is now a **single `{{DATE_LINE}}` slot the model composes in the target locale's convention** (e.g. `Paris, le 6 juin 2026`, `New York, June 6, 2026`, or a date-only line where the locale omits the city). The date was already model-supplied, so this only merges two values into one model-composed line — no script-owned formatting handed over. `sender_city` stays a slot for the sender address block. Body alignment (justify) left as-is: acceptable for the majority of the 11 default languages, and changing it would swap one bias for another. Regenerated `assets/Cover_letter_template.docx` accordingly.
+- **Data contract:** `--data-json` now carries `date_line` instead of `date_letter`. Updated `fill_cover_letter.py` (placeholder map, required fields, docstring), `generate_templates.py` (template + placeholder list), the cover-letter `GUIDE.md`, the gallery (`tooling/build_samples.py`) and the test fixture. No migration: the value was always composed per letter by the model, never stored.
+
+### Documentation
+- **`letter_conventions.md`:** new `DATE_LINE` section (model composes place+date per locale; city optional for date-only locales) and a **"Layout & direction" known-limitation note** — the template is LTR; for an RTL target language reachable only via the "Other… (ISO code)" option (Arabic, Hebrew, Persian, Urdu…), the block layout is not mirrored (content correct, arrangement LTR). None of the 11 default interface languages is RTL, so this never affects them. Closes the cover-letter localization topic: text conventions were already agnostic (model-driven for any language); only the layout's continental tic needed neutralizing.
+
+
 
 ### Added
 - **`manage_tracker.py --timezone <IANA>`** on every file-writing subcommand (`init`, `upsert`, `bulk`, `batch-status`, `reconcile`). The filename timestamp zone is now a parameter the model resolves from the candidate locale, instead of a hardcoded constant. New `resolve_timezone()` helper: validates the IANA name via `zoneinfo`, and on an unknown/malformed name warns on stderr and falls back to `Europe/Paris` — a filename op never aborts (robustness floor). No city→zone table (mapping a place to its zone is a model task, same reason LNG-1 dropped the language tables).
