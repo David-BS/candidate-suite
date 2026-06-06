@@ -49,8 +49,10 @@ No storage. Claude scans the conversations (`conversation_search`/`recent_chats`
 ## Convention for writing a conversation marker
 
 When an application is added, the `conversation` field receives the marker of the
-**current** conversation in the form **`YYYY-MM-DD ◆`** — today's date in
-**UTC+2 (Paris time, CEST)**, obtained via `python3 -c "from datetime import datetime,timezone,timedelta; print(datetime.now(timezone(timedelta(hours=2))).strftime('%Y-%m-%d'))"` (**no time**:
+**current** conversation in the form **`YYYY-MM-DD ◆`** — today's date in the
+**candidate's local timezone** (the IANA zone the model resolved from the locale: profile
+`City` → else session location → else `Europe/Paris`), obtained via
+`python3 -c "from datetime import datetime; from zoneinfo import ZoneInfo; print(datetime.now(ZoneInfo('<IANA>')).strftime('%Y-%m-%d'))"` (DST-handled, **never** a fixed `timedelta` offset) (**no time**:
 the `◆` state alone designates the current conversation, and the cell shows only the date).
 We **do not write a UUID** at write time (the assistant has no reliable access to the current
 conversation's URL). It's the **refresh** (workflow E) that later promotes
@@ -74,7 +76,7 @@ conversation's URL). It's the **refresh** (workflow E) that later promotes
 
 ### B. Add / update an application (persistent mode)
 1. Copy the CSV with the most recent name locally → `/home/claude/suivi.csv`.
-2. Compose the `entry-json`: `company`, `position`, `language`, `deliverables` (list), `conversation` = `"YYYY-MM-DD ◆"` (Paris date, no time), `date` = today.
+2. Compose the `entry-json`: `company`, `position`, `language`, `deliverables` (list), `conversation` = `"YYYY-MM-DD ◆"` (candidate's local date, no time), `date` = today.
 3. `python scripts/manage_tracker.py upsert --input-path /home/claude/suivi.csv --output-dir /home/claude --entry-json '<json>'` → **the script builds the timestamped name** (`Applications_Tracker_YYYYMMDD_HHMM.csv`, no dashes in the date) and **prints the path**: present THAT file. Never compose the name by hand.
 4. **Write ritual**: `present_files` of the new CSV → the user **adds it to the project** → **deletes the old version** (identified by name).
 5. Optional: regenerate + display the dashboard.
@@ -288,7 +290,7 @@ no separate component.
 - Manipulation **only via the scripts**; **no connector**
 - Persistent mode = project CSV; ephemeral mode = scan + read-only
 - Always **read the CSV with the most recent name before writing**
-- Versioning with **unique timestamped names** (Paris time); the user adds/deletes
+- Versioning with **unique timestamped names** (candidate's local time, via `--timezone`); the user adds/deletes
 - **(company, position)** key → the assistant decides update vs add (asks if in doubt)
 - Writing the conversation marker: `"YYYY-MM-DD ◆"` (date only); UUID set at refresh
 - Only fill in **genuinely available** information

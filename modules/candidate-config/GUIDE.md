@@ -80,9 +80,13 @@ Fields: `First name`, `Last name`, `Full name`, `Street`, `Postal code`, `City`,
 > field and no frozen default. The working language follows the **conversation**; the letter
 > language follows the **confirmed offer** (persisted per-application in the tracker, not here).
 > See `SKILL.md` (Language principle + STEP 4 sub-step 3-bis). The only locale the profile
-> carries is **temporal**, and it is **derived, not stored**: the existing `City` field yields
-> the timezone via `zoneinfo` (e.g. `City` → `Europe/Paris`, DST-handled) used for the tracker
-> filename timestamp. No timezone field to fill.
+> carries is **temporal**, and it is **derived, not stored**: the **model** maps the candidate
+> locale to an IANA timezone — `City` first, else the host-provided **session location**, else
+> none — and passes it to `manage_tracker.py` via `--timezone` (`zoneinfo`-validated, DST-handled,
+> e.g. → `Europe/Paris`) for the tracker filename timestamp. **No timezone field to fill**, and
+> **no city→zone table** (mapping a place to its zone is a model task, not a static list — same
+> reason LNG-1 dropped the language tables). The script falls back to `Europe/Paris` only when
+> nothing is passed.
 
 ### STEP 3 — Signature
 

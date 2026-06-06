@@ -12,6 +12,8 @@ Two styles, as agreed: white-box (import) for the pure helpers, black-box
 import json
 import re
 
+import pytest
+
 from _helpers import load_module, run_cli
 
 MT_REL = "modules/application-tracker/scripts/manage_tracker.py"
@@ -355,3 +357,61 @@ def test_cli_reconcile_emits_machine_summary(tmp_path, seed_csv):
     assert {"promoted", "deleted", "new", "floor", "linked_added", "hygiene"} <= set(
         summary
     )
+
+
+# --------------------------------------------------------------------------- #
+# White-box — timezone resolution (model = zone, script = clock; 0.17.0)
+# --------------------------------------------------------------------------- #
+
+
+def test_resolve_timezone_valid_name():
+    assert MT.resolve_timezone("America/New_York").key == "America/New_York"
+
+
+def test_resolve_timezone_empty_or_none_falls_back_to_default():
+    assert MT.resolve_timezone("").key == MT.DEFAULT_TZ
+    assert MT.resolve_timezone(None).key == MT.DEFAULT_TZ
+
+
+def test_resolve_timezone_invalid_warns_and_falls_back(capsys):
+    tz = MT.resolve_timezone("Not/AZone")
+    assert tz.key == MT.DEFAULT_TZ
+    err = capsys.readouterr().err
+    assert "Not/AZone" in err and "falling back" in err
+
+
+# --------------------------------------------------------------------------- #
+# Black-box — --timezone is accepted and never aborts a filename op (0.17.0)
+# --------------------------------------------------------------------------- #
+
+
+def test_cli_init_accepts_timezone(tmp_path):
+    proc = run_cli(
+        MT_REL, "init", "--output-dir", str(tmp_path), "--timezone", "America/New_York"
+    )
+    assert proc.returncode == 0, proc.stderr
+    files = list(tmp_path.glob("Applications_Tracker_*.csv"))
+    assert len(files) == 1
+    assert re.fullmatch(r"Applications_Tracker_\d{8}_\d{4}\.csv", files[0].name)
+
+
+def test_cli_init_invalid_timezone_falls_back_and_still_writes(tmp_path):
+    proc = run_cli(
+        MT_REL, "init", "--output-dir", str(tmp_path), "--timezone", "Not/AZone"
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "falling back" in proc.stderr
+    assert len(list(tmp_path.glob("Applications_Tracker_*.csv"))) == 1
+
+
+@pytest.mark.parametrize(
+    "subcmd", ["init", "upsert", "bulk", "batch-status", "reconcile"]
+)
+def test_timezone_arg_wired_on_every_file_writing_subcommand(subcmd):
+    # Lesson from 0.16.5: assert the invariant across ALL surfaces, not just one.
+    # A capability added to N subcommands must be tested on the N — otherwise a
+    # missing wiring slips through a green suite. Every subcommand that builds a
+    # timestamped filename must expose --timezone.
+    proc = run_cli(MT_REL, subcmd, "--help")
+    assert proc.returncode == 0, proc.stderr
+    assert "--timezone" in proc.stdout

@@ -35,8 +35,8 @@ CSV columns (fixed order):
     date, company, position, language, status, deliverables, conversation, notes
 
 Usage:
-    # The SCRIPT builds the timestamped name (Paris time) — pass --output-dir,
-    # NOT a hand-composed name. Read the printed path to present the file.
+    # The SCRIPT builds the timestamped name (local time via --timezone) — pass
+    # --output-dir, NOT a hand-composed name. Read the printed path to present the file.
     python manage_tracker.py init --output-dir /home/claude
 
     python manage_tracker.py upsert \\
@@ -68,7 +68,7 @@ import json
 import re
 import sys
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pathlib import Path
 
 
@@ -497,6 +497,35 @@ def load_input(input_path):
     return ""
 
 
+DEFAULT_TZ = "Europe/Paris"
+
+
+def resolve_timezone(name):
+    """Validate an IANA timezone name; warn + fall back to DEFAULT_TZ on failure.
+
+    Division of labour (model = zone, script = clock): the MODEL resolves the
+    IANA zone from the candidate's locale -- profile City, else the host-provided
+    session location, else nothing -- and passes it via --timezone. The SCRIPT
+    only reads the instant and stamps it. There is NO city->zone table here: a
+    static table would be the same language-coupled anti-pattern LNG-1 removed;
+    mapping a place to its zone is a model capability.
+
+    An invalid name never aborts a filename op (robustness floor): it warns on
+    stderr and falls back. The fallback is only ever reached when neither the
+    profile City nor the session location yielded a zone (rare).
+    """
+    if not name:
+        return ZoneInfo(DEFAULT_TZ)
+    try:
+        return ZoneInfo(name)
+    except (ZoneInfoNotFoundError, ValueError):
+        print(
+            f"[manage_tracker] unknown timezone {name!r}; falling back to {DEFAULT_TZ}",
+            file=sys.stderr,
+        )
+        return ZoneInfo(DEFAULT_TZ)
+
+
 def resolve_output_path(args):
     """The SCRIPT builds the unique timestamped name (never the assistant by hand).
 
@@ -505,15 +534,17 @@ def resolve_output_path(args):
       the date) in --output-dir (default: current folder).
     No-dash format: aligned with the normalization the Claude app applies when
     indexing CSV files in a project (observed on 2026-05-30).
-    Paris time (Europe/Paris, DST handled) — pure stdlib (zoneinfo), zero external dependency.
-    The chosen path is printed by every command → the assistant presents THAT
-    file, without ever composing the name itself.
+    Timestamp zone = --timezone (IANA, resolved by the model from the candidate's
+    locale), else DEFAULT_TZ. DST handled -- pure stdlib (zoneinfo), zero external
+    dependency. The chosen path is printed by every command -> the assistant
+    presents THAT file, without ever composing the name itself.
     """
     explicit = getattr(args, "output_path", None)
     if explicit:
         return explicit
     out_dir = getattr(args, "output_dir", None) or "."
-    stamp = datetime.now(ZoneInfo("Europe/Paris")).strftime("%Y%m%d_%H%M")
+    tz = resolve_timezone(getattr(args, "timezone", None))
+    stamp = datetime.now(tz).strftime("%Y%m%d_%H%M")
     return str(Path(out_dir) / f"Applications_Tracker_{stamp}.csv")
 
 
@@ -621,12 +652,22 @@ def main():
     p = sub.add_parser("init")
     p.add_argument("--output-path", default="")
     p.add_argument("--output-dir", default=".")
+    p.add_argument(
+        "--timezone",
+        default="",
+        help="IANA zone for the timestamp (model-resolved from locale); falls back to Europe/Paris",
+    )
     p.set_defaults(func=cmd_init)
 
     p = sub.add_parser("upsert")
     p.add_argument("--input-path", default="")
     p.add_argument("--output-path", default="")
     p.add_argument("--output-dir", default=".")
+    p.add_argument(
+        "--timezone",
+        default="",
+        help="IANA zone for the timestamp (model-resolved from locale); falls back to Europe/Paris",
+    )
     p.add_argument("--entry-json", required=True)
     p.set_defaults(func=cmd_upsert)
 
@@ -634,6 +675,11 @@ def main():
     p.add_argument("--input-path", default="")
     p.add_argument("--output-path", default="")
     p.add_argument("--output-dir", default=".")
+    p.add_argument(
+        "--timezone",
+        default="",
+        help="IANA zone for the timestamp (model-resolved from locale); falls back to Europe/Paris",
+    )
     p.add_argument("--entries-json", required=True)
     p.set_defaults(func=cmd_bulk)
 
@@ -641,6 +687,11 @@ def main():
     p.add_argument("--input-path", default="")
     p.add_argument("--output-path", default="")
     p.add_argument("--output-dir", default=".")
+    p.add_argument(
+        "--timezone",
+        default="",
+        help="IANA zone for the timestamp (model-resolved from locale); falls back to Europe/Paris",
+    )
     p.add_argument("--changes-json", required=True)
     p.set_defaults(func=cmd_batch_status)
 
@@ -648,6 +699,11 @@ def main():
     p.add_argument("--input-path", default="")
     p.add_argument("--output-path", default="")
     p.add_argument("--output-dir", default=".")
+    p.add_argument(
+        "--timezone",
+        default="",
+        help="IANA zone for the timestamp (model-resolved from locale); falls back to Europe/Paris",
+    )
     p.add_argument(
         "--scan-json",
         required=True,
