@@ -10,6 +10,27 @@ fix → patch (`0.3.x`); feature addition → minor (`0.x.0`).
 > Ajouté → Added · Modifié → Changed · Corrigé → Fixed · Déprécié → Deprecated ·
 > Supprimé → Removed · Sécurité → Security · Validé → Validated · Documentation → Documentation.
 
+## [0.16.6] — 2026-06-05
+
+### Changed
+- **EN-canonical code sweep completed (closes the "infra 100% EN" gap).** Every remaining runtime `print`/error/help message still in French was translated to English across the 5 generators, the 4 `md_to_pdf.py`, `docx_to_pdf.py`, `fill_cover_letter.py`, `manage_tracker.py` and the 3 candidate-config setup scripts. A two-pass scan (accents **and** accent-free French in string literals) now returns zero residuals — the earlier accent-only claim had missed accent-free French. Stray French JS identifier renamed (`repere` -> `marker`) in `build_dashboard.py`. One French fragment kept on purpose: a comment in `fill_cover_letter.py` quoting the removed `"a completer"` placeholder word-list (historical record).
+
+### Fixed
+- **Quick-reference `key_stats` renders structured items.** The loop assumed a list of strings and dumped raw Python dicts when the model supplied `{stat, context}` objects; it now tolerates both shapes (mirrors `pick()` for `top_points`): `- **<figure>** -- <context>`.
+- **Stale French tracker status example.** `manage_tracker.py` docstring `"status":"Entretien"` -> EN-canonical `"Interview scheduled"`.
+- **Acceptance gallery: five identical Lorem paragraphs.** `tooling/build_samples.py` `lorem()` always restarted from the same word, so the five body paragraphs were prefixes of one another. It now takes a per-paragraph `start` offset -> five visibly distinct paragraphs at the same ratio targets (15/22/26/22/15).
+- **Acceptance gallery: invisible signature.** `signature_b64()` returned an 8x4 px PNG, so the *signed* letter variant showed no visible signature. It now draws a real cursive paraphe (quadratic Beziers, RGBA, hand-encoded PNG, stdlib-only) -- the signed sample shows a legible signature.
+
+### Documentation
+- **GUIDE label de-freezing.** The four `.md`-generator GUIDEs prescribed per-language label phrases (e.g. `title -> FR "Playbook strategique"`), contradicting the surface contract. They now describe each `title` by its function and tell the model to render it idiomatically in the run language without transliterating an English label; the frozen `--title "..."` examples are neutralized to `"<deliverable title>"`.
+- **Recruiter/company extraction doc reconciled.** `cover-letter-generator/GUIDE.md` rule #3 still said "always use the dedicated script", contradicting STEP 4 (model-driven, no script) and the removal note. Reconciled to model-driven extraction.
+
+### Tests
+- **TST-1 updated in the same commit** (gate stays green): the quick-reference gallery sample now feeds `key_stats` as `{stat, context}` so the acceptance gallery exercises the new rendering; added tests for dict/string `key_stats` rendering, five distinct Lorem paragraphs, and a visible (non-placeholder) sample signature.
+
+### Validated
+- 20 scripts compile; FR residual scan (accents + accent-free) = 0; **115 tests pass** (3 new); E2E cover-letter test confirms floating-signature embedding (`word/media`, `wp:anchor`) and five distinct paragraphs.
+
 ## [0.16.5] — 2026-06-05
 
 > Note — version `0.16.4` was consumed by a release **tag** publishing the acceptance gallery with the skill left unchanged at `0.16.3` (release asset `candidate-suite-0-16-3.skill`). The skill version resumes at `0.16.5`; no skill `0.16.4` was ever published.

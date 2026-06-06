@@ -62,7 +62,7 @@ This generator does **not** hard-code per-language labels. **You** produce the s
 
 **Required keys** (exact set, 8): `title`, `s_pitch`, `s_stats`, `s_points`, `s_qa`, `s_questions`, `s_checklist`, `evidence`
 
-Each value is the localized label for that slot (e.g. `title` → EN `"Quick Reference Card"`, FR `"Fiche de référence rapide"`, DE `"Schnellreferenz"`). See `modules/cover-letter-generator/references/language_style_generic.md` for register / locale conventions (spacing, punctuation, register).
+Each value is the label for that slot, **written by the model directly in the run language, by intent** — there is **no per-language phrase table** (L6). Render each label from what it *is*, picking the natural idiomatic term in the run language; **never transliterate an English label**. For `title`, name the deliverable by its function: *a one-page card condensing the other documents for quick recall*. See `modules/cover-letter-generator/references/language_style_generic.md` for register / locale conventions (spacing, punctuation, register).
 
 ### STEP 1 — Config check
 `memory_user_edits view`. If config is missing → ask for `candidate-config`. Stop.
@@ -108,7 +108,7 @@ Present the `.md` with `present_files`.
 ### STEP 6 — Offer the PDF export
 Always offer the PDF (ideal for a 1-page print):
 ```bash
-python scripts/md_to_pdf.py --input <filename>.md --output <filename>.pdf --title "Quick Reference"
+python scripts/md_to_pdf.py --input <filename>.md --output <filename>.pdf --title "<deliverable title>"
 ```
 Present the `.pdf`.
 

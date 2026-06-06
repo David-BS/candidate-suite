@@ -162,18 +162,18 @@ def main():
     try:
         data = json.loads(args.data_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
 
     try:
         labels = json.loads(args.labels_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide (labels) : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON (labels): {e}", file=sys.stderr)
         sys.exit(1)
     if not isinstance(labels, dict) or set(labels) != REQUIRED_LABELS:
         got = set(labels) if isinstance(labels, dict) else set()
         print(
-            f"❌ Libellés invalides — manquants: {sorted(REQUIRED_LABELS - got)} ; en trop: {sorted(got - REQUIRED_LABELS)}",
+            f"❌ Invalid labels — missing: {sorted(REQUIRED_LABELS - got)}; extra: {sorted(got - REQUIRED_LABELS)}",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -190,11 +190,11 @@ def main():
     ]
     missing = [f for f in required if f not in data]
     if missing:
-        print(f"❌ Champs manquants : {missing}", file=sys.stderr)
+        print(f"❌ Missing required fields: {missing}", file=sys.stderr)
         sys.exit(1)
 
     if not isinstance(data["pitch"], list) or len(data["pitch"]) != 5:
-        print("❌ Le pitch doit être exactement 5 phrases", file=sys.stderr)
+        print("❌ The pitch must be exactly 5 sentences", file=sys.stderr)
         sys.exit(1)
 
     md_content = generate_summary_md(labels, data)
@@ -203,12 +203,12 @@ def main():
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(md_content, encoding="utf-8")
 
-    print(f"✅ Synthèse candidature (Markdown) générée : {output_path}")
-    print(f"   - {len(data.get('strengths', []))} forces")
-    print(f"   - {len(data.get('weaknesses', []))} faiblesses")
-    print(f"   - {len(data.get('pitch', []))} phrases de pitch")
+    print(f"✅ Application summary (Markdown) generated: {output_path}")
+    print(f"   - {len(data.get('strengths', []))} strengths")
+    print(f"   - {len(data.get('weaknesses', []))} weaknesses")
+    print(f"   - {len(data.get('pitch', []))} pitch sentences")
     print(f"   - {len(data.get('talking_points', []))} talking points")
-    print("\n💡 Pour exporter en PDF :")
+    print("\n💡 To export to PDF:")
     print(
         f"   python md_to_pdf.py --input {output_path} --output {output_path.with_suffix('.pdf')}"
     )

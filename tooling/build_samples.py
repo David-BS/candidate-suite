@@ -54,11 +54,16 @@ _LOREM = (
 ).split()
 
 
-def lorem(target):
-    """A Lorem ipsum string just under `target` chars, on a word boundary."""
+def lorem(target, start=0):
+    """A Lorem ipsum string just under `target` chars, on a word boundary.
+
+    `start` offsets the word window so each paragraph draws a different slice of
+    `_LOREM` -- the five body paragraphs are then visibly distinct, not prefixes
+    of one another.
+    """
     words, total, i = [], 0, 0
     while True:
-        w = _LOREM[i % len(_LOREM)]
+        w = _LOREM[(start + i) % len(_LOREM)]
         if total + len(w) + 1 > target:
             break
         words.append(w)
@@ -90,18 +95,51 @@ def lorem_letter_data(signed):
         "subject_label": "Subject:",
         "closing": "Yours sincerely,",
     }
-    for field, target in RATIO_TARGETS.items():
-        data[field] = lorem(int(target * 0.98))
+    for idx, (field, target) in enumerate(RATIO_TARGETS.items()):
+        data[field] = lorem(int(target * 0.98), start=idx * 13)
     return data
 
 
 def signature_b64():
-    """A valid fictional signature PNG (8x4, stdlib only), base64-encoded."""
+    """A visible fictional cursive signature (RGBA PNG, stdlib only), base64-encoded.
+
+    Drawn from a few quadratic Bezier strokes onto a transparent canvas, then
+    PNG-encoded by hand (no Pillow) so the acceptance gallery's *signed* variant
+    shows a real, legible-looking paraphe instead of an invisible dot.
+    """
     import base64
     import struct
     import zlib
 
-    w, h = 8, 4
+    W, H = 360, 120
+    INK = b"\x16\x30\x6e\xff"  # dark-blue ink, opaque
+    buf = bytearray(b"\x00\x00\x00\x00" * (W * H))
+
+    def stamp(x, y, r):
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                if dx * dx + dy * dy <= r * r:
+                    px, py = x + dx, y + dy
+                    if 0 <= px < W and 0 <= py < H:
+                        o = (py * W + px) * 4
+                        buf[o:o + 4] = INK
+
+    def qbezier(p0, p1, p2, r=2, steps=90):
+        for s in range(steps + 1):
+            t = s / steps
+            x = (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0]
+            y = (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1]
+            stamp(round(x), round(y), r)
+
+    for seg in (
+        ((20, 85), (55, 15), (90, 70)),
+        ((90, 70), (120, 8), (150, 75)),
+        ((150, 75), (182, 18), (212, 70)),
+        ((212, 70), (246, 22), (280, 66)),
+        ((280, 66), (320, 28), (348, 52)),
+    ):
+        qbezier(*seg, r=2)
+    qbezier((40, 98), (180, 112), (320, 96), r=1)  # underline flourish
 
     def _chunk(tag, payload):
         c = tag + payload
@@ -111,11 +149,14 @@ def signature_b64():
             + struct.pack(">I", zlib.crc32(c) & 0xFFFFFFFF)
         )
 
-    raw = b"".join(b"\x00" + b"\xff\xff\xff" * w for _ in range(h))
+    raw = bytearray()
+    for y in range(H):
+        raw.append(0)  # filter type 0 (None)
+        raw.extend(buf[y * W * 4:(y + 1) * W * 4])
     png = (
         b"\x89PNG\r\n\x1a\n"
-        + _chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
-        + _chunk(b"IDAT", zlib.compress(raw))
+        + _chunk(b"IHDR", struct.pack(">IIBBBBB", W, H, 8, 6, 0, 0, 0))
+        + _chunk(b"IDAT", zlib.compress(bytes(raw), 9))
         + _chunk(b"IEND", b"")
     )
     return base64.b64encode(png).decode()
@@ -362,10 +403,10 @@ _GENERATORS = {
             _BASE,
             pitch_short="20 years in banking IT; led payment platforms at 2B+ tx/year, 99%+ SLA.",
             key_stats=[
-                "2B+ transactions/year",
-                "99%+ SLA",
-                "80% incident reduction",
-                "150-person org",
+                {"stat": "2B+ transactions/year", "context": "European payment platforms"},
+                {"stat": "99%+ SLA", "context": "critical flows"},
+                {"stat": "80% incident reduction", "context": "in one year"},
+                {"stat": "150-person org", "context": "current Agile tribe"},
             ],
             top_points=[
                 {

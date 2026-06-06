@@ -352,7 +352,7 @@ def build_html(entries, statuses, readonly, surface, ui_lang, labels):
       var fabricated = "\ud83d\udccb " + fullDate +
                        (company ? " - " + company : "") +
                        (position ? " - " + position : "");
-      var repere = (realTitle && realTitle.trim()) ? realTitle.trim() : fabricated;
+      var marker = (realTitle && realTitle.trim()) ? realTitle.trim() : fabricated;
 
       // 1) Deleted conversation: URL invalidated → grey italic, not clickable
       if (deleted){
@@ -363,7 +363,7 @@ def build_html(entries, statuses, readonly, surface, ui_lang, labels):
         // Desktop: a link would open the browser → we show the exact marker to
         // find/copy in the sidebar (selectable with one click).
         if (IS_DESKTOP){
-          return '<span title="'+esc(L.conv_desktop_title)+'" style="color:var(--color-text-secondary); user-select:all; -webkit-user-select:all; cursor:text;">'+esc(repere)+'</span>';
+          return '<span title="'+esc(L.conv_desktop_title)+'" style="color:var(--color-text-secondary); user-select:all; -webkit-user-select:all; cursor:text;">'+esc(marker)+'</span>';
         }
         // Web: clickable link (new tab, same account).
         return '<a href="'+esc(url)+'" target="_blank" rel="noopener" title="'+esc(rawLabel||url)+'" style="color:var(--color-text-info); white-space:nowrap; text-decoration:none;">'+esc(dateShort)+'</a>';

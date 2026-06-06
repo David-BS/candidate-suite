@@ -60,7 +60,7 @@ This generator does **not** hard-code per-language labels. **You** produce the s
 
 **Required keys** (exact set, 8): `title`, `section_sw`, `sub_strengths`, `sub_weaknesses`, `section_pitch`, `pitch_intro`, `section_tp`, `tp_intro`
 
-Each value is the localized label for that slot (e.g. `title` → EN `"Application Summary"`, FR `"Synthèse de candidature"`, DE `"Bewerbungsübersicht"`). See `modules/cover-letter-generator/references/language_style_generic.md` for register / locale conventions (spacing, punctuation, register).
+Each value is the label for that slot, **written by the model directly in the run language, by intent** — there is **no per-language phrase table** (L6). Render each label from what it *is*, picking the natural idiomatic term in the run language; **never transliterate an English label**. For `title`, name the deliverable by its function: *a concise summary of the candidate's fit for this role (strengths, gaps, pitch)*. See `modules/cover-letter-generator/references/language_style_generic.md` for register / locale conventions (spacing, punctuation, register).
 
 ### STEP 0 — Conversation rename (suggestion)
 
@@ -127,7 +127,7 @@ If yes, run:
 python scripts/md_to_pdf.py \
   --input /mnt/user-data/outputs/<filename>.md \
   --output /mnt/user-data/outputs/<filename>.pdf \
-  --title "Application Summary"
+  --title "<deliverable title>"
 ```
 
 The PDF applies the house style (strengths in green, weaknesses in orange, tips, lightbulb icon). Present the `.pdf` with `present_files`.

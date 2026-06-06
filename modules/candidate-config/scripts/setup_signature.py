@@ -130,7 +130,7 @@ def main():
 
     in_path = Path(args.input_path)
     if not in_path.exists():
-        print(f"❌ Fichier introuvable : {in_path}", file=sys.stderr)
+        print(f"❌ File not found: {in_path}", file=sys.stderr)
         sys.exit(1)
 
     # Load the image
@@ -139,13 +139,13 @@ def main():
         img.load()  # force full loading
     except Exception as e:
         print(f"❌ Impossible de lire l'image : {e}", file=sys.stderr)
-        print("   Formats acceptés : PNG, JPG, GIF, BMP.", file=sys.stderr)
+        print("   Accepted formats: PNG, JPG, GIF, BMP.", file=sys.stderr)
         sys.exit(1)
 
     if img.format not in ACCEPTED_FORMATS:
-        print(f"❌ Format non supporté : {img.format}", file=sys.stderr)
+        print(f"❌ Unsupported format: {img.format}", file=sys.stderr)
         print(
-            f"   Formats acceptés : {', '.join(sorted(ACCEPTED_FORMATS))}.",
+            f"   Accepted formats: {', '.join(sorted(ACCEPTED_FORMATS))}.",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -164,20 +164,20 @@ def main():
         final_size = original_size
         final_dims = original_dims
         print(
-            f"✅ Image déjà optimale : {final_size} octets, {final_dims[0]}×{final_dims[1]} px",
+            f"✅ Image already optimal: {final_size} bytes, {final_dims[0]}×{final_dims[1]} px",
             file=sys.stderr,
         )
     else:
         # Resizing needed
         print(
-            f"ℹ️ Image à redimensionner : {original_size} octets, {original_dims[0]}×{original_dims[1]} px",
+            f"ℹ️ Image to resize: {original_size} bytes, {original_dims[0]}×{original_dims[1]} px",
             file=sys.stderr,
         )
         print(
-            f"   Cible : ≤ {MAX_IMAGE_BYTES} octets, max {TARGET_MAX_WIDTH}×{TARGET_MAX_HEIGHT} px",
+            f"   Target: ≤ {MAX_IMAGE_BYTES} bytes, max {TARGET_MAX_WIDTH}×{TARGET_MAX_HEIGHT} px",
             file=sys.stderr,
         )
-        print("   (Cela peut prendre quelques secondes...)", file=sys.stderr)
+        print("   (This may take a few seconds...)", file=sys.stderr)
 
         # Convert RGBA → RGB when outputting JPEG (no alpha)
         if out_format == "JPEG" and img.mode in ("RGBA", "LA", "P"):
@@ -193,28 +193,28 @@ def main():
             )
             final_size = len(raw_bytes)
             print(
-                f"✅ Redimensionnée : {final_size} octets, {final_dims[0]}×{final_dims[1]} px",
+                f"✅ Resized: {final_size} bytes, {final_dims[0]}×{final_dims[1]} px",
                 file=sys.stderr,
             )
         except ResizeTimeout:
             print(
-                f"⏱️ Timeout : le redimensionnement a dépassé {RESIZE_TIMEOUT_SECONDS} secondes.",
+                f"⏱️ Timeout: resizing exceeded {RESIZE_TIMEOUT_SECONDS} seconds.",
                 file=sys.stderr,
             )
             print("", file=sys.stderr)
-            print("Pour continuer, choisis une option :", file=sys.stderr)
+            print("To continue, choose an option:", file=sys.stderr)
             print("", file=sys.stderr)
-            print("  1. Réduire l'image toi-même puis relancer :", file=sys.stderr)
+            print("  1. Resize the image yourself, then re-run:", file=sys.stderr)
             print(
-                "     - Cible : moins de 500 Ko, dimensions ~600×400 px max",
+                "     - Target: under 500 KB, dimensions ~600×400 px max",
                 file=sys.stderr,
             )
-            print("     - macOS : Aperçu → Outils → Ajuster la taille", file=sys.stderr)
-            print("     - Windows : Paint → Redimensionner", file=sys.stderr)
-            print("     - En ligne : tinypng.com, squoosh.app", file=sys.stderr)
+            print("     - macOS: Preview → Tools → Adjust Size", file=sys.stderr)
+            print("     - Windows: Paint → Resize", file=sys.stderr)
+            print("     - Online: tinypng.com, squoosh.app", file=sys.stderr)
             print("", file=sys.stderr)
             print(
-                "  2. Générer sans signature pour le moment et reconfigurer plus tard.",
+                "  2. Proceed without a signature for now and reconfigure later.",
                 file=sys.stderr,
             )
             sys.exit(3)
@@ -223,11 +223,11 @@ def main():
     b64 = base64.b64encode(raw_bytes).decode("ascii")
     if len(b64) > MAX_BASE64_CHARS:
         print(
-            f"❌ Image encore trop volumineuse après optimisation : {len(b64)} chars base64",
+            f"❌ Image still too large after optimization: {len(b64)} base64 chars",
             file=sys.stderr,
         )
         print(
-            f"   (limite : {MAX_BASE64_CHARS}). Fournir une image plus simple.",
+            f"   (limit: {MAX_BASE64_CHARS}). Provide a simpler image.",
             file=sys.stderr,
         )
         sys.exit(4)
@@ -236,17 +236,17 @@ def main():
     if args.output_path:
         Path(args.output_path).parent.mkdir(parents=True, exist_ok=True)
         Path(args.output_path).write_text(b64, encoding="ascii")
-        print(f"✅ Signature encodée : {args.output_path}", file=sys.stderr)
+        print(f"✅ Signature encoded: {args.output_path}", file=sys.stderr)
         print(
-            f"   {len(b64)} caractères base64 (≈ {len(raw_bytes) / 1024:.1f} Ko décodés)",
+            f"   {len(b64)} base64 characters (≈ {len(raw_bytes) / 1024:.1f} KB decoded)",
             file=sys.stderr,
         )
     else:
         # Stdout: just the base64, for easy capture
         print(b64)
-        print(f"ℹ️ {len(b64)} caractères base64 produits.", file=sys.stderr)
-        print("   À stocker en mémoire via : memory_user_edits add", file=sys.stderr)
-        print("   sous la clé : [CONFIG] Signature base64", file=sys.stderr)
+        print(f"ℹ️ {len(b64)} base64 characters produced.", file=sys.stderr)
+        print("   To store in memory via: memory_user_edits add", file=sys.stderr)
+        print("   under the key: [CONFIG] Signature base64", file=sys.stderr)
 
 
 if __name__ == "__main__":

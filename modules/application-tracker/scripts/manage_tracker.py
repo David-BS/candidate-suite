@@ -51,7 +51,7 @@ Usage:
 
     python manage_tracker.py batch-status \\
         --input-path suivi.csv --output-dir /home/claude \\
-        --changes-json '[{"company":"Acme","position":"SWE","status":"Entretien"}]'
+        --changes-json '[{"company":"Acme","position":"SWE","status":"Interview scheduled"}]'
 
     # (--output-path is still accepted as a fallback, but manual naming is
     #  discouraged: it's the source of the `20260530` vs `2026-05-30` drift.)
@@ -526,7 +526,7 @@ def write_output(output_path, content):
 def cmd_init(args):
     out = resolve_output_path(args)
     write_output(out, render_csv([]))
-    print(f"✅ CSV de suivi vierge créé : {out}")
+    print(f"✅ Blank tracker CSV created: {out}")
 
 
 def cmd_upsert(args):
@@ -534,12 +534,12 @@ def cmd_upsert(args):
     try:
         entry = json.loads(args.entry_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
     merged = upsert_entries(existing, [entry])
     out = resolve_output_path(args)
     write_output(out, render_csv(merged))
-    print(f"✅ Candidature ajoutée/mise à jour. Total : {len(merged)} ligne(s).")
+    print(f"✅ Application added/updated. Total: {len(merged)} row(s).")
     print(f"   {out}")
 
 
@@ -548,16 +548,16 @@ def cmd_bulk(args):
     try:
         new_entries = json.loads(args.entries_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
     if not isinstance(new_entries, list):
-        print("❌ entries-json doit être une liste JSON", file=sys.stderr)
+        print("❌ entries-json must be a JSON list", file=sys.stderr)
         sys.exit(1)
     merged = upsert_entries(existing, new_entries)
     out = resolve_output_path(args)
     write_output(out, render_csv(merged))
     print(
-        f"✅ {len(new_entries)} candidature(s) traitée(s). Total : {len(merged)} ligne(s)."
+        f"✅ {len(new_entries)} application(s) processed. Total: {len(merged)} row(s)."
     )
     print(f"   {out}")
 
@@ -567,16 +567,16 @@ def cmd_batch_status(args):
     try:
         changes = json.loads(args.changes_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
     if not isinstance(changes, list):
-        print("❌ changes-json doit être une liste JSON", file=sys.stderr)
+        print("❌ changes-json must be a JSON list", file=sys.stderr)
         sys.exit(1)
     merged, applied = apply_status_changes(existing, changes)
     out = resolve_output_path(args)
     write_output(out, render_csv(merged))
     print(
-        f"✅ {applied} changement(s) de statut appliqué(s). Total : {len(merged)} ligne(s)."
+        f"✅ {applied} status change(s) applied. Total: {len(merged)} row(s)."
     )
     print(f"   {out}")
 
@@ -586,10 +586,10 @@ def cmd_reconcile(args):
     try:
         scan = json.loads(args.scan_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide (scan) : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON (scan): {e}", file=sys.stderr)
         sys.exit(1)
     if not isinstance(scan, list):
-        print("❌ scan-json doit être une liste JSON", file=sys.stderr)
+        print("❌ scan-json must be a JSON list", file=sys.stderr)
         sys.exit(1)
     rows, summary = reconcile(
         existing,
@@ -600,15 +600,15 @@ def cmd_reconcile(args):
     out = resolve_output_path(args)
     write_output(out, render_csv(rows))
 
-    print("✅ Réconciliation appliquée.")
-    print(f"   • {summary['promoted']} repère(s) ◆ → lié(s)")
-    print(f"   • {summary['linked_added']} lien(s) ajouté(s) (union)")
-    print(f"   • {summary['new']} nouvelle(s) candidature(s)")
-    print(f"   • {summary['deleted']} conversation(s) marquée(s) ✗")
-    print(f"   • plancher de scan : {summary['floor'] or '(scan vide)'}")
+    print("✅ Reconciliation applied.")
+    print(f"   • {summary['promoted']} marker(s) ◆ → linked")
+    print(f"   • {summary['linked_added']} link(s) added (union)")
+    print(f"   • {summary['new']} new application(s)")
+    print(f"   • {summary['deleted']} conversation(s) marked ✗")
+    print(f"   • scan floor: {summary['floor'] or '(empty scan)'}")
     if summary["hygiene"]:
-        print(f"   • {len(summary['hygiene'])} conversation(s) à renommer (hygiène)")
-    print(f"   Total : {len(rows)} ligne(s).")
+        print(f"   • {len(summary['hygiene'])} conversation(s) to rename (hygiene)")
+    print(f"   Total: {len(rows)} row(s).")
     print(f"   {out}")
     # Machine block so the assistant composes the recap / hygiene report.
     print("---RECONCILE-SUMMARY-JSON---")

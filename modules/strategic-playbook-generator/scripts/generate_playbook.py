@@ -175,18 +175,18 @@ def main():
     try:
         data = json.loads(args.data_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON: {e}", file=sys.stderr)
         sys.exit(1)
 
     try:
         labels = json.loads(args.labels_json)
     except json.JSONDecodeError as e:
-        print(f"❌ JSON invalide (labels) : {e}", file=sys.stderr)
+        print(f"❌ Invalid JSON (labels): {e}", file=sys.stderr)
         sys.exit(1)
     if not isinstance(labels, dict) or set(labels) != REQUIRED_LABELS:
         got = set(labels) if isinstance(labels, dict) else set()
         print(
-            f"❌ Libellés invalides — manquants: {sorted(REQUIRED_LABELS - got)} ; en trop: {sorted(got - REQUIRED_LABELS)}",
+            f"❌ Invalid labels — missing: {sorted(REQUIRED_LABELS - got)}; extra: {sorted(got - REQUIRED_LABELS)}",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -194,7 +194,7 @@ def main():
     required = ["candidate_name", "job_title", "company_name", "date"]
     missing = [f for f in required if f not in data]
     if missing:
-        print(f"❌ Champs obligatoires manquants : {missing}", file=sys.stderr)
+        print(f"❌ Missing required fields: {missing}", file=sys.stderr)
         sys.exit(1)
 
     md_content = generate_playbook_md(labels, data)
@@ -219,10 +219,10 @@ def main():
         ]
         if data.get(k)
     ]
-    print(f"✅ Playbook stratégique (Markdown) généré : {output_path}")
-    print(f"   - {len(sections)} sections : {', '.join(sections)}")
-    print(f"   - Recherche web : {'oui' if data.get('web_research_done') else 'non'}")
-    print("\n💡 Pour exporter en PDF :")
+    print(f"✅ Strategic playbook (Markdown) generated: {output_path}")
+    print(f"   - {len(sections)} sections: {', '.join(sections)}")
+    print(f"   - Web research: {'yes' if data.get('web_research_done') else 'no'}")
+    print("\n💡 To export to PDF:")
     print(
         f"   python md_to_pdf.py --input {output_path} --output {output_path.with_suffix('.pdf')}"
     )

@@ -56,7 +56,7 @@ This generator does **not** hard-code per-language labels. **You** produce the s
 
 **Required keys** (exact set, 20): `title`, `web_note_yes`, `web_note_no`, `usage_tip`, `s_context`, `s_pain`, `s_org`, `s_positioning`, `s_strategy`, `s_questions`, `s_tough`, `s_pitch`, `s_redlines`, `analysis`, `your_angle`, `evidence`, `round`, `focus`, `approach`, `strategy`
 
-Each value is the localized label for that slot (e.g. `title` → EN `"Strategic Playbook"`, FR `"Playbook stratégique"`, DE `"Strategisches Playbook"`). See `modules/cover-letter-generator/references/language_style_generic.md` for register / locale conventions (spacing, punctuation, register).
+Each value is the label for that slot, **written by the model directly in the run language, by intent** — there is **no per-language phrase table** (L6). Render each label from what it *is*, picking the natural idiomatic term in the run language; **never transliterate an English label**. For `title`, name the deliverable by its function: *the candidate's strategic plan of approach for winning this specific role*. See `modules/cover-letter-generator/references/language_style_generic.md` for register / locale conventions (spacing, punctuation, register).
 
 ### STEP 0 — Conversation rename (suggestion)
 
@@ -106,7 +106,7 @@ The playbook is ready in Markdown. Would you also like a PDF version?
 ```
 If yes:
 ```bash
-python scripts/md_to_pdf.py --input <filename>.md --output <filename>.pdf --title "Strategic Playbook"
+python scripts/md_to_pdf.py --input <filename>.md --output <filename>.pdf --title "<deliverable title>"
 ```
 Present the `.pdf`.
 

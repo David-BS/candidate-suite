@@ -23,7 +23,7 @@ def encode_signature(input_path):
     """Converts an image (PNG, JPG) to base64 for text storage"""
     input_file = Path(input_path)
     if not input_file.exists():
-        print(f"❌ Fichier introuvable : {input_file}", file=sys.stderr)
+        print(f"❌ File not found: {input_file}", file=sys.stderr)
         sys.exit(1)
 
     with open(input_file, "rb") as f:
@@ -33,8 +33,8 @@ def encode_signature(input_path):
     with open(output_path, "w") as f:
         f.write(encoded)
 
-    print(f"✅ Signature encodée : {output_path}")
-    print(f"📊 Taille base64 : {len(encoded)} caractères")
+    print(f"✅ Signature encoded: {output_path}")
+    print(f"📊 Base64 size: {len(encoded)} characters")
     return str(output_path)
 
 
@@ -42,7 +42,7 @@ def copy_to_outputs(source_path):
     """Copies a file to /mnt/user-data/outputs/"""
     source = Path(source_path)
     if not source.exists():
-        print(f"❌ Fichier source introuvable : {source}", file=sys.stderr)
+        print(f"❌ Source file not found: {source}", file=sys.stderr)
         sys.exit(1)
 
     output_dir = Path("/mnt/user-data/outputs/")
@@ -51,7 +51,7 @@ def copy_to_outputs(source_path):
     dest = output_dir / source.name
     shutil.copy2(source, dest)
 
-    print(f"✅ Fichier copié : {dest}")
+    print(f"✅ File copied: {dest}")
     return str(dest)
 
 

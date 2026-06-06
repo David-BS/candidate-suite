@@ -308,19 +308,19 @@ def main():
     doc = create_template(style=args.style)
     output = output_dir / "Cover_letter_template.docx"
     doc.save(str(output))
-    print(f"✅ Template neutre créé (style {args.style}) : {output}")
+    print(f"✅ Neutral template created (style {args.style}): {output}")
 
-    print(f"\n📋 Style : {args.style}")
+    print(f"\n📋 Style: {args.style}")
     if args.style == "hybrid":
         print(
-            "  - 3 lignes : nom / adresse complète / coordonnées digitales (email | linkedin | téléphone)"
+            "  - 3 lines: name / full address / digital contacts (email | linkedin | phone)"
         )
     else:
         print(
-            "  - 6 lignes : nom / rue / code postal+ville / email / linkedin / téléphone"
+            "  - 6 lines: name / street / postcode+city / email / linkedin / phone"
         )
 
-    print("\n📋 Placeholders supportés :")
+    print("\n📋 Supported placeholders:")
     placeholders = [
         "{{SENDER_NAME}}",
         "{{SENDER_STREET}}",

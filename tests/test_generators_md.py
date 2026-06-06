@@ -115,3 +115,29 @@ def test_invalid_language_form_is_rejected_by_cli(rel, tmp_path):
         json.dumps(_valid_labels(rel)),
     )
     assert proc.returncode == 2  # argparse type-validation error
+
+
+# --- quick-ref key_stats rendering (0.16.6) -------------------------------- #
+
+QUICKREF = "modules/quick-reference-generator/scripts/generate_quick_reference.py"
+
+
+def test_quickref_key_stats_accepts_dicts_and_strings():
+    """key_stats tolerates {stat, context} dicts (rendered as a bold figure + a
+    dash + context) as well as plain strings (back-compat). Regression guard for
+    the 0.16.6 fix where structured items were dumped as raw Python dicts."""
+    qr = load_module(QUICKREF)
+    labels = {k: k for k in qr.REQUIRED_LABELS}
+    md = qr.generate_quickref_md(
+        labels,
+        {
+            "key_stats": [
+                {"stat": "2B+ tx/year", "context": "payment platforms"},
+                "99%+ SLA",
+            ]
+        },
+    )
+    text = md if isinstance(md, str) else "\n".join(md)
+    assert "- **2B+ tx/year** — payment platforms" in text  # dict → figure + context
+    assert "- 99%+ SLA" in text  # plain string still supported
+    assert "{'stat'" not in text and "{\"stat\"" not in text  # never a raw dict dump

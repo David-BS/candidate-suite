@@ -19,12 +19,12 @@ import json
 
 def storage_question():
     """Prints the persistence-mode question (no connector)."""
-    print("""Mode de persistance :
+    print("""Persistence mode:
 
-A. Fichier de projet (recommandé) — dépose une fois CV/signature/suivi dans les fichiers du projet
-B. Sans persistance — ré-upload à chaque session
+A. Project file (recommended) — drop CV/signature/tracker once into the project files
+B. No persistence — re-upload each session
 
-Quel mode tu choisis ?""")
+Which mode do you choose?""")
 
 
 def name_check(extracted_name):
@@ -40,12 +40,12 @@ def name_check(extracted_name):
     last_with_space = " ".join(last_parts)
     last_with_hyphen = "-".join(last_parts)
 
-    print(f"""Le CV indique "{extracted_name}". Ton nom de famille est-il :
+    print(f"""The CV shows "{extracted_name}". Is your last name:
 
-A. {last_with_space} (deux mots séparés)
-B. {last_with_hyphen} (avec trait d'union)
+A. {last_with_space} (two separate words)
+B. {last_with_hyphen} (hyphenated)
 
-Quelle option ?""")
+Which option?""")
     return True
 
 
@@ -64,27 +64,27 @@ def final_recap(data_json):
     cv_filename = data.get("cv_filename", "?")
     signature_filename = data.get("signature_filename", "?")
     template_filename = data.get("template_filename", "Cover_letter_template.docx")
-    templates_source = data.get("templates_source", "générés (Hybride)")
+    templates_source = data.get("templates_source", "generated (Hybrid)")
 
-    print(f"""✅ Configuration enregistrée
+    print(f"""✅ Configuration saved
 
-📋 Profil :
-  Nom        : {full_name}
-  Adresse    : {street}, {postal} {city}
+📋 Profile:
+  Name       : {full_name}
+  Address    : {street}, {postal} {city}
   Email      : {email}
-  Téléphone  : {phone}
+  Phone      : {phone}
   LinkedIn   : {linkedin}
 
-🛠️ Configuration :
-  Stockage      : {storage}
+🛠️ Configuration:
+  Storage       : {storage}
   CV            : {cv_filename}
   Signature     : {signature_filename}
   Template      : {template_filename}
-  Source templates : {templates_source}
+  Templates source : {templates_source}
 
-Tu peux maintenant générer des cover letters. Si tu veux modifier
-quoi que ce soit, dis-moi par exemple "change mon email" ou
-"mets à jour mon CV".""")
+You can now generate cover letters. If you want to change
+anything, tell me for example "change my email" or
+"update my CV".""")
 
 
 def main():
