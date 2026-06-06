@@ -1,6 +1,6 @@
 ---
 name: candidate-suite
-version: 0.18.0
+version: 0.19.0
 updated: 2026-06-06
 description: "All-in-one suite for preparing job applications and interviews, bundled as a single module: cover letter, interview prep, application summary, strategic playbook, one-page reference card, and application tracking, plus candidate-profile configuration. Single entry point: it shows a selection widget, then generates each deliverable through its sub-module's script. Use whenever the user wants to apply for a role, prepare an application or an interview, get tools for a job posting, configure the skill or update their CV or profile, generate a cover letter, produce a summary, playbook, or reference card, track applications or view their application dashboard (e.g. asking where their applications stand), or makes any open-ended request for job-application help. These are intents, not required wordings: match the user's intent regardless of the language the request is written in."
 ---
